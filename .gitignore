@@ -1,0 +1,6 @@
+/checkpoints
+/training_data
+/runs
+/results
+models/__pycache__
+/__pycache__
