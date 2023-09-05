@@ -1,6 +1,7 @@
 /checkpoints
-/training_data
-/runs
 /results
 models/__pycache__
 /__pycache__
+
+/lakh_encoded
+/nesmdb_encoded

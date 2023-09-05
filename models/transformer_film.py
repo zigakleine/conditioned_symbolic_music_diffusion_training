@@ -9,12 +9,12 @@ import numpy as np
 
 class TransformerDDPM(nn.Module):
 
-    def __init__(self):
+    def __init__(self, categories):
         super(TransformerDDPM, self).__init__()
 
         # self.batch_size = 16
         self.seq_len = 32
-        self.vocab_size = 42
+        self.vocab_size = 76
         self.num_timesteps = 1000
 
         self.embed_size = 128
@@ -35,12 +35,12 @@ class TransformerDDPM(nn.Module):
         self.transformer_norm_1 = nn.LayerNorm(self.embed_size)
         self.to_mlp_layers = nn.Linear(self.embed_size, self.mlp_dims)
 
-        self.mlp_layers = nn.ModuleList([MlpLayer(self.embed_size, self.mlp_dims) for _ in range(self.num_mlp_layers)])
+        self.mlp_layers = nn.ModuleList([MlpLayer(self.embed_size, self.mlp_dims, categories) for _ in range(self.num_mlp_layers)])
 
         self.transformer_norm_2 = nn.LayerNorm(self.mlp_dims)
         self.lm_head = nn.Linear(self.mlp_dims, self.vocab_size) # dense layer for output
 
-    def forward(self, x, t):
+    def forward(self, x, t, genres, composers):
 
         B, T, C = x.shape
         # t1 = t[:, None].repeat(1, 8)
@@ -58,7 +58,7 @@ class TransformerDDPM(nn.Module):
         x = self.to_mlp_layers(x)
 
         for mlp_layer in self.mlp_layers:
-            x = mlp_layer(x, t)
+            x = mlp_layer(x, t,  genres, composers)
 
         x = self.transformer_norm_2(x)
         logits = self.lm_head(x)  # logits = B, T, vocab_size
@@ -104,28 +104,38 @@ class EncoderLayer(nn.Module):
 
 class MlpLayer(nn.Module):
 
-    def __init__(self, timestep_embed_channels, mlp_dims):
+    def __init__(self, timestep_embed_channels, mlp_dims, categories):
         super(MlpLayer, self).__init__()
 
-        self.denseFiLM = DenseFiLM(timestep_embed_channels, mlp_dims)
+        self.denseFiLM = DenseFiLM(timestep_embed_channels, mlp_dims, categories)
         self.denseResBlock = DenseResBlock(mlp_dims)
 
-    def forward(self, x, t):
+    def forward(self, x, t, genres, composers):
 
-        scale, shift = self.denseFiLM(t)
+        scale, shift = self.denseFiLM(t, genres, composers)
         x = self.denseResBlock(x, scale, shift)
         return x
 
 
 class DenseFiLM(nn.Module):
 
-    def __init__(self, embed_channels, out_channels, dropout=0.1):
+    def __init__(self, embed_channels, out_channels, categories, dropout=0.1):
         super(DenseFiLM, self).__init__()
+
+        self.categories = categories
+        self.num_genres = categories["genres"]
+        self.num_composers = categories["composers"]
 
         self.embed_channels = embed_channels
         self.out_channels = out_channels
         self.linear_1 = nn.Linear(self.embed_channels,  self.embed_channels*4)
         self.linear_2 = nn.Linear(self.embed_channels*4,  self.embed_channels*4)
+
+        if self.num_composers is not None:
+            self.composers_emb = nn.Embedding(self.num_composers, self.embed_channels*4)
+
+        if self.num_genres is not None:
+            self.genres_emb = nn.Embedding(self.num_genres, self.embed_channels*4)
 
         self.scale = nn.Linear(self.embed_channels*4,  self.out_channels)
         self.shift = nn.Linear(self.embed_channels*4,  self.out_channels)
@@ -134,13 +144,20 @@ class DenseFiLM(nn.Module):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def forward(self, t):
+    def forward(self, t, genres, composers):
+
 
         t_embedding = self.positional_timestep_embedding(t, self.embed_channels)
 
         t_embedding = self.linear_1(t_embedding)
         t_embedding = self.silu(t_embedding)
         t_embedding = self.linear_2(t_embedding)
+
+        if genres[0] != -1:
+            t_embedding += self.genres_emb(genres)
+
+        if composers[0] != -1:
+            t_embedding += self.composers_emb(composers)
 
         scale_embedding = self.scale(t_embedding)
         shift_embedding = self.shift(t_embedding)
