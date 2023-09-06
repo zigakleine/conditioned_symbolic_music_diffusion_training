@@ -142,11 +142,19 @@ def choose_labels(l, is_lakh):
     return genres, composers
 
 
+
 def train():
+
 
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
     print("started training at:", formatted)
+
+    if torch.cuda.is_available():
+        num_gpus = torch.cuda.device_count()
+        for i in range(num_gpus):
+            gpu_name = torch.cuda.get_device_name(i)
+            print(f"GPU {i}: {gpu_name}")
 
     lr = 1e-3
     batch_size = 64
