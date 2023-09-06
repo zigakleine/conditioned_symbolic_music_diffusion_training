@@ -205,7 +205,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 100
+    epochs = 130
 
     #load data
 
@@ -319,6 +319,18 @@ def train():
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(), "epoch": (starting_epoch + epoch)}
         min_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
         torch.save(checkpoint, min_model_abs_path)
+
+        if epoch == 99:
+            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                          "epoch": (starting_epoch + epoch)}
+            hund_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
+            torch.save(checkpoint, hund_model_abs_path)
+
+        if epoch == 109:
+            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                          "epoch": (starting_epoch + epoch)}
+            hundten_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "110_checkpoint.pth.tar")
+            torch.save(checkpoint, hundten_model_abs_path)
 
         #  picklaj losse
 
