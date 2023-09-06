@@ -173,24 +173,25 @@ def train():
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000, gamma=0.98)
     mse = nn.MSELoss()
 
-    is_lakh = True
-    load_existing = False
+    is_lakh = False
+    load_existing = True
     start_at_epoch_zero = True
 
     if is_lakh:
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb"
+        run_name = "ddpm_lakh_nesmdb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
+
     existing_model_run_name = "ddpm_lakh"
-    existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name, "last_checkpoint.pth.tar")
+    existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name, "min_checkpoint.pth.tar")
 
     if load_existing:
         checkpoint = torch.load(existing_model_abs_path)
         model.load_state_dict(checkpoint["state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer"])
+        # optimizer.load_state_dict(checkpoint["optimizer"])
         epoch_num = checkpoint["epoch"]
 
     setup_logging(run_name)
@@ -205,7 +206,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 120
+    epochs = 150
 
     #load data
 
