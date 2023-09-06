@@ -197,7 +197,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 200
+    epochs = 100
 
     #load data
 
@@ -261,7 +261,8 @@ def train():
 
         mean_train_loss = train_loss_sum / train_count
         train_losses.append(mean_train_loss)
-        logging.info(f"Learning rate at epoch  {starting_epoch + epoch}:{scheduler.get_last_lr()}")
+        current_lr = optimizer.param_groups[0]['lr']
+        logging.info(f"Learning rate at epoch  {starting_epoch + epoch}:{current_lr}")
         logging.info(f"Epoch {starting_epoch + epoch} mean training loss: {mean_train_loss}")
         val_count = 0
         val_loss_sum = 0
