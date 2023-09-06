@@ -162,6 +162,7 @@ def train():
 
     model = TransformerDDPM(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.98)
     mse = nn.MSELoss()
 
     is_lakh = True
@@ -254,11 +255,13 @@ def train():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            scheduler.step()
 
             train_count +=1
 
         mean_train_loss = train_loss_sum / train_count
         train_losses.append(mean_train_loss)
+        logging.info(f"Learning rate at epoch  {starting_epoch + epoch}:{scheduler.get_last_lr()}")
         logging.info(f"Epoch {starting_epoch + epoch} mean training loss: {mean_train_loss}")
         val_count = 0
         val_loss_sum = 0
