@@ -119,7 +119,6 @@ def inverse_data_transform(batch, slices, data_min, data_max):
 
 def choose_labels(l, is_lakh):
 
-
     if is_lakh:
         genres = torch.tensor([-1], dtype=torch.int64)
         composers = torch.tensor([-1], dtype=torch.int64)
@@ -193,6 +192,7 @@ def train():
         model.load_state_dict(checkpoint["state_dict"])
         # optimizer.load_state_dict(checkpoint["optimizer"])
         epoch_num = checkpoint["epoch"]
+        print(f"loaded existing model {existing_model_abs_path}, at epoch {epoch_num}")
 
     setup_logging(run_name)
     diffusion = Diffusion()
