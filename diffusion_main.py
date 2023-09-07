@@ -189,7 +189,7 @@ def train():
     if load_existing:
         checkpoint = torch.load(existing_model_abs_path)
         model.load_state_dict(checkpoint["state_dict"])
-        # optimizer.load_state_dict(checkpoint["optimizer"])
+        optimizer.load_state_dict(checkpoint["optimizer"])
         epoch_num = checkpoint["epoch"]
         print(f"loaded existing model {existing_model_abs_path}, at epoch {epoch_num}")
 
@@ -205,7 +205,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 50
+    epochs = 100
 
     #load data
 
@@ -233,7 +233,7 @@ def train():
 
         starting_epoch = 0
 
-    min_val_loss = 0.037265588092256566
+    min_val_loss = 0.03625541579510484
     # min_val_loss = float("inf")
 
     for epoch in range(epochs):
