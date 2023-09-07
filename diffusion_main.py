@@ -172,19 +172,19 @@ def train():
     mse = nn.MSELoss()
 
     is_lakh = False
-    load_existing = False
-    start_at_epoch_zero = True
+    load_existing = True
+    start_at_epoch_zero = False
 
     if is_lakh:
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb"
+        run_name = "ddpm_lakh_nesmdb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
 
-    existing_model_run_name = "ddpm_lakh"
-    existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name, "min_checkpoint.pth.tar")
+    existing_model_run_name = "ddpm_lakh_nesmdb"
+    existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name, "last_checkpoint.pth.tar")
 
     if load_existing:
         checkpoint = torch.load(existing_model_abs_path)
@@ -205,7 +205,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 150
+    epochs = 50
 
     #load data
 
@@ -233,7 +233,8 @@ def train():
 
         starting_epoch = 0
 
-    min_val_loss = float("inf")
+    min_val_loss = 0.037265588092256566
+    # min_val_loss = float("inf")
 
     for epoch in range(epochs):
 
