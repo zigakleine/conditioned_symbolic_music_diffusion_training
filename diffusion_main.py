@@ -172,16 +172,15 @@ def train():
     mse = nn.MSELoss()
 
     is_lakh = False
-    load_existing = True
-    start_at_epoch_zero = False
+    load_existing = False
+    start_at_epoch_zero = True
 
     if is_lakh:
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
     else:
-        run_name = "ddpm_lakh_nesmdb"
+        run_name = "ddpm_nesmdb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
-
 
     existing_model_run_name = "ddpm_lakh_nesmdb"
     existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name, "last_checkpoint.pth.tar")
@@ -189,7 +188,7 @@ def train():
     if load_existing:
         checkpoint = torch.load(existing_model_abs_path)
         model.load_state_dict(checkpoint["state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer"])
+        # optimizer.load_state_dict(checkpoint["optimizer"])
         epoch_num = checkpoint["epoch"]
         print(f"loaded existing model {existing_model_abs_path}, at epoch {epoch_num}")
 
@@ -205,7 +204,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 140
+    epochs = 250
 
     #load data
 
@@ -233,8 +232,7 @@ def train():
 
         starting_epoch = 0
 
-    min_val_loss = 0.03625541579510484
-    # min_val_loss = float("inf")
+    min_val_loss = float("inf")
 
     for epoch in range(epochs):
 
@@ -327,10 +325,10 @@ def train():
             hund_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
             torch.save(checkpoint, hund_model_abs_path)
 
-        if epoch == 109:
+        if epoch == 149:
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
                           "epoch": (starting_epoch + epoch)}
-            hundten_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "110_checkpoint.pth.tar")
+            hundten_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
             torch.save(checkpoint, hundten_model_abs_path)
 
         #  picklaj losse
