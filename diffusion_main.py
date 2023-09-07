@@ -6,7 +6,6 @@ import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import numpy as np
@@ -92,13 +91,13 @@ class Diffusion:
 
 
 
-def setup_logging(run_name):
-    os.makedirs("checkpoints", exist_ok=True)
-    os.makedirs("results", exist_ok=True)
-    os.makedirs(os.path.join("checkpoints", run_name), exist_ok=True)
-    os.makedirs(os.path.join("results", run_name), exist_ok=True)
-    os.makedirs(os.path.join("results", run_name, "generated"), exist_ok=True)
-    os.makedirs(os.path.join("results", run_name, "graphs"), exist_ok=True)
+def setup_logging(run_name, current_dir):
+    os.makedirs(os.path.join(current_dir, "checkpoints"), exist_ok=True)
+    os.makedirs(os.path.join(current_dir, "results"), exist_ok=True)
+    os.makedirs(os.path.join(current_dir, "checkpoints", run_name), exist_ok=True)
+    os.makedirs(os.path.join(current_dir, "results", run_name), exist_ok=True)
+    os.makedirs(os.path.join(current_dir, "results", run_name, "generated"), exist_ok=True)
+    os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 def normalize_dataset(batch, data_min, data_max):
     """Normalize dataset to range [-1, 1]."""
@@ -173,14 +172,14 @@ def train():
     mse = nn.MSELoss()
 
     is_lakh = False
-    load_existing = True
+    load_existing = False
     start_at_epoch_zero = True
 
     if is_lakh:
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
     else:
-        run_name = "ddpm_lakh_nesmdb"
+        run_name = "ddpm_nesmdb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
 
@@ -194,7 +193,7 @@ def train():
         epoch_num = checkpoint["epoch"]
         print(f"loaded existing model {existing_model_abs_path}, at epoch {epoch_num}")
 
-    setup_logging(run_name)
+    setup_logging(run_name, current_dir)
     diffusion = Diffusion()
 
     print("device is", diffusion.device)
