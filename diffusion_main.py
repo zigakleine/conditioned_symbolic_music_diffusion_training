@@ -205,7 +205,7 @@ def train():
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 100
+    epochs = 140
 
     #load data
 
