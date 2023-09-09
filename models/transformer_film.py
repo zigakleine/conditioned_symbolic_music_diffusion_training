@@ -4,7 +4,7 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
-from torchinfo import summary
+#from torchinfo import summary
 import numpy as np
 
 class TransformerDDPM(nn.Module):
