@@ -4,7 +4,7 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
-#from torchinfo import summary
+from torchinfo import summary
 import numpy as np
 
 class TransformerDDPM(nn.Module):
@@ -17,12 +17,12 @@ class TransformerDDPM(nn.Module):
         self.vocab_size = 76
         self.num_timesteps = 1000
 
-        self.embed_size = 128
+        self.embed_size = 512
 
         self.num_heads = 8
-        self.num_layers = 6
+        self.num_layers = 12
 
-        self.num_mlp_layers = 2
+        self.num_mlp_layers = 4
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -30,7 +30,7 @@ class TransformerDDPM(nn.Module):
         self.position_embedding = nn.Embedding(self.seq_len, self.embed_size)
         # self.timestep_embedding = nn.Embedding(self.num_timesteps, self.embed_size)
 
-        self.layers = nn.ModuleList([EncoderLayer(self.embed_size, self.num_heads, self.mlp_dims) for _ in range(self.num_layers)])
+        self.layers = nn.ModuleList([EncoderLayer(self.embed_size, self.num_heads) for _ in range(self.num_layers)])
 
         self.transformer_norm_1 = nn.LayerNorm(self.embed_size)
         self.to_mlp_layers = nn.Linear(self.embed_size, self.mlp_dims)
@@ -68,11 +68,13 @@ class TransformerDDPM(nn.Module):
 
 class EncoderLayer(nn.Module):
 
-    def __init__(self, embed_size, num_heads, dim_feedforward=2048, dropout=0.1):
+
+    def __init__(self, embed_size, num_heads, dropout=0.1):
 
         super(EncoderLayer, self).__init__()
 
-        self.self_attn = nn.MultiheadAttention(embed_size, num_heads)  # dropout = dropout)
+        dim_feedforward = embed_size * 4
+        self.self_attn = nn.MultiheadAttention(embed_size, num_heads, dropout=dropout, batch_first=True)
 
         self.linear_1 = nn.Linear(embed_size, dim_feedforward)
         # self.dropout = nn.Dropout(dropout)
@@ -80,8 +82,9 @@ class EncoderLayer(nn.Module):
 
         self.norm_1 = nn.LayerNorm(embed_size)
         self.norm_2 = nn.LayerNorm(embed_size)
-        # self.dropout_1 = nn.Dropout(dropout)
-        # self.dropout_2 = nn.Dropout(dropout)
+        self.dropout_1 = nn.Dropout(dropout)
+        self.dropout_2 = nn.Dropout(dropout)
+        self.dropout_3 = nn.Dropout(dropout)
 
         self.gelu = nn.GELU()
 
@@ -90,13 +93,16 @@ class EncoderLayer(nn.Module):
         shortcut = x
         x = self.norm_1(x)
         x, ws = self.self_attn(x, x, x, need_weights=False)
+        x = self.dropout_1(x)
         x += shortcut
 
         shortcut_2 = x
         x = self.norm_2(x)
         x = self.linear_1(x)
         x = self.gelu(x)
+        x = self.dropout_2(x)
         x = self.linear_2(x)
+        x = self.dropout_3(x)
         x += shortcut_2
 
         return x
@@ -220,24 +226,24 @@ class DenseResBlock(nn.Module):
 
         return x + shortcut
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 if __name__ == "__main__":
+    # pass
+    categories = {'genres': 13, 'composers': 292}
 
-    pass
-    # batch_size = 16
-    # seq_len = 8
-    # vocab_size = 64
-    #
-    # tr = TransformerDDPM()
-    #
-    # # print(np.prod([(1,2,3), (1, 2)]))
-    # #
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model = TransformerDDPM().to(device)
-    # # print(model)
+    seq_len = 32
+    vocab_size = 76
+    num_timesteps = 1000
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = TransformerDDPM(categories).to(device)
+    print(model)
+    print(count_parameters(model))
     #
     #
-    # summary(model, [(64, 32, 42), (64, 1)], batch_dim=0)
+    # summary(model, [(64, 32, 76), (64, 1), (64, 1), (64, 1)], batch_dim=0)
     # for p in model.parameters():
     #     print(p)
     #

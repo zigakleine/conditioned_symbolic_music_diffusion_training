@@ -74,7 +74,7 @@ class Diffusion:
                 predicted_noise = model(x, t_expand, genres, composers)
                 if cfg_scale > 0:
                     uncond_predicted_noise = model(x, t_expand, torch.tensor([-1], dtype=torch.int64), torch.tensor([-1], dtype=torch.int64))
-                    predicted_noise = torch.lerp(uncond_predicted_noise, predicted_noise)
+                    predicted_noise = torch.lerp(uncond_predicted_noise, predicted_noise, cfg_scale)
 
                 alpha = self.alpha[t][:, None, None]
                 alpha_hat = self.alpha_hat[t][:, None, None]
@@ -154,7 +154,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1e-3
+    lr = 5e-4
     batch_size = 64
     current_dir = os.getcwd()
 
@@ -172,39 +172,58 @@ def train():
     mse = nn.MSELoss()
 
     is_lakh = False
-    load_existing = False
-    start_at_epoch_zero = True
+    continue_training = False
+    start_from_pretrained_model = False
+
 
     if is_lakh:
-        run_name = "ddpm_lakh"
-        min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
+        run_name = "ddpm_lakh_b"
+        min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb"
+        run_name = "ddpm_nesmdb_b"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
-    existing_model_run_name = "ddpm_lakh_nesmdb"
-    existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name, "last_checkpoint.pth.tar")
 
-    if load_existing:
+    if start_from_pretrained_model:
+        existing_model_run_name = "ddpm_lakh_b"
+
+        existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name,
+                                               "min_checkpoint.pth.tar")
         checkpoint = torch.load(existing_model_abs_path)
         model.load_state_dict(checkpoint["state_dict"])
-        # optimizer.load_state_dict(checkpoint["optimizer"])
-        epoch_num = checkpoint["epoch"]
-        print(f"loaded existing model {existing_model_abs_path}, at epoch {epoch_num}")
+
+        print(f"starting from pretrained lakh model {existing_model_abs_path}")
+    else:
+        if continue_training:
+            existing_model_run_name = run_name
+            existing_model_abs_path = os.path.join(current_dir, "checkpoints", existing_model_run_name,
+                                                   "last_checkpoint.pth.tar")
+            checkpoint = torch.load(existing_model_abs_path)
+
+            model.load_state_dict(checkpoint["state_dict"])
+            optimizer.load_state_dict(checkpoint["optimizer"])
+            epoch_num_start = checkpoint["epoch"]
+            min_val_loss_start = checkpoint["min_val_loss"]
+            print(f"loaded existing model {existing_model_abs_path}, at epoch {epoch_num_start}, atl val loss {min_val_loss_start}")
+
+        else:
+            min_val_loss_start = float("inf")
+            print(f"starting from zero")
+
 
     setup_logging(run_name, current_dir)
     diffusion = Diffusion()
 
     print("device is", diffusion.device)
     print("dataset is", run_name)
-    print("load_existing", load_existing)
-    print("start_at_epoch_zero", start_at_epoch_zero)
+    print("continue_training", continue_training)
+    print("starting from lakh", start_from_pretrained_model)
 
     slice_ckpt = "./pkl_info/fb256_slices_76.pkl"
     fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
-    epochs = 250
+    epochs = 200
 
     #load data
 
@@ -218,7 +237,7 @@ def train():
     train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
 
-    if load_existing and not start_at_epoch_zero:
+    if continue_training:
         train_losses_abs_path = os.path.join(current_dir, "results", existing_model_run_name, "train_losses.pkl")
         train_losses = pickle.load(open(train_losses_abs_path, "rb"))
 
@@ -226,13 +245,13 @@ def train():
         val_losses = pickle.load(open(val_losses_abs_path, "rb"))
 
         starting_epoch = len(train_losses)
+        min_val_loss = min_val_loss_start
     else:
         val_losses = []
         train_losses = []
-
         starting_epoch = 0
+        min_val_loss = min_val_loss_start
 
-    min_val_loss = float("inf")
 
     for epoch in range(epochs):
 
@@ -244,7 +263,6 @@ def train():
         train_loss_sum = 0
 
         for step, (batch, l) in enumerate(pbar):
-            # print(step, batch[0])
 
             genre, composer = choose_labels(l, is_lakh)
             genre = genre.to(device)
@@ -304,7 +322,8 @@ def train():
             min_val_loss = mean_val_loss
             logging.info(f"!!! New min validation loss at epoch {starting_epoch + epoch}, mean validation loss: {mean_val_loss}")
             min_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
-            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(), "epoch": (starting_epoch + epoch)}
+            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             torch.save(checkpoint, min_model_abs_path)
 
         sampled_latents = diffusion.sample(model, 1, torch.tensor([-1], dtype=torch.int64), torch.tensor([-1], dtype=torch.int64), cfg_scale=0)
@@ -315,19 +334,20 @@ def train():
         pickle.dump(batch_transformed, file)
         file.close()
 
-        checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(), "epoch": (starting_epoch + epoch)}
+        checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                      "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
         min_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
         torch.save(checkpoint, min_model_abs_path)
 
         if epoch == 99:
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-                          "epoch": (starting_epoch + epoch)}
+                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             hund_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
             torch.save(checkpoint, hund_model_abs_path)
 
         if epoch == 149:
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-                          "epoch": (starting_epoch + epoch)}
+                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             hundten_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
             torch.save(checkpoint, hundten_model_abs_path)
 
@@ -355,6 +375,7 @@ def train():
         plt.legend()
         loss_plot_abs_path = os.path.join(current_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
         plt.savefig(loss_plot_abs_path)
+        plt.clf()
 
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")

@@ -5,3 +5,5 @@ models/__pycache__
 
 /lakh_encoded
 /nesmdb_encoded
+/multitrack_vae_model
+*.so
