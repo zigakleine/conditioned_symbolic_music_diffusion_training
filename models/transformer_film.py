@@ -17,12 +17,12 @@ class TransformerDDPM(nn.Module):
         self.vocab_size = 76
         self.num_timesteps = 1000
 
-        self.embed_size = 512
+        self.embed_size = 768
 
-        self.num_heads = 8
+        self.num_heads = 12
         self.num_layers = 12
 
-        self.num_mlp_layers = 4
+        self.num_mlp_layers = 3
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -40,13 +40,27 @@ class TransformerDDPM(nn.Module):
         self.transformer_norm_2 = nn.LayerNorm(self.mlp_dims)
         self.lm_head = nn.Linear(self.mlp_dims, self.vocab_size) # dense layer for output
 
+    def transformer_timestep_embedding(self, timesteps, channels):
+        noise = timesteps
+        assert len(noise.shape) == 1
+        half_dim = channels // 2
+        emb = math.log(10000) / float(half_dim - 1)
+        emb = torch.exp(torch.arange(half_dim, device=self.device) * -emb)
+        emb = noise[:, None] * emb[None, :]
+        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1)
+        if channels % 2 == 1:
+            emb = torch.pad(emb, [[0, 0], [0, 1]])
+        assert emb.shape == (noise.shape[0], channels)
+        return emb
+
     def forward(self, x, t, genres, composers):
 
         B, T, C = x.shape
         # t1 = t[:, None].repeat(1, 8)
 
         tok_embedding = self.token_embedding(x)  # tok_embedding =  B, T, C
-        pos_embedding = self.position_embedding(torch.arange(T, device=self.device))  # pos_embedding =  T, C
+        pos_embedding = self.transformer_timestep_embedding(torch.arange(T, device=self.device), self.embed_size)  # pos_embedding =  T, C
+        # print(pos_embedding.requires_grad)
         # timestep_embedding = self.timestep_embedding(t1)  # timestep_embedding = B, T, C
         x = tok_embedding + pos_embedding
         # x += timestep_embedding
@@ -152,9 +166,8 @@ class DenseFiLM(nn.Module):
 
     def forward(self, t, genres, composers):
 
-
         t_embedding = self.positional_timestep_embedding(t, self.embed_channels)
-
+        # print(t_embedding.requires_grad)
         t_embedding = self.linear_1(t_embedding)
         t_embedding = self.silu(t_embedding)
         t_embedding = self.linear_2(t_embedding)
@@ -170,11 +183,9 @@ class DenseFiLM(nn.Module):
 
         return scale_embedding, shift_embedding
 
+
+
     def positional_timestep_embedding(self, timesteps, channels):
-        # batch_size =
-        # # channels = 128
-        # assert timesteps.shape == (batch_size, 1)
-        # channels.shape = ()
         noise = timesteps.squeeze(-1)
         assert len(noise.shape) == 1
         half_dim = channels // 2
@@ -186,7 +197,6 @@ class DenseFiLM(nn.Module):
             emb = torch.pad(emb, [[0, 0], [0, 1]])
         assert emb.shape == (noise.shape[0], channels)
 
-        # print(emb)
         return emb
 
 
@@ -201,6 +211,9 @@ class DenseResBlock(nn.Module):
         self.norm_1 = nn.LayerNorm(out_channels)
         self.norm_2 = nn.LayerNorm(out_channels)
 
+        self.dropout_1 = nn.Dropout(dropout)
+        self.dropout_2 = nn.Dropout(dropout)
+
         self.silu = nn.SiLU()
 
     def forward(self, x, scale, shift):
@@ -212,17 +225,18 @@ class DenseResBlock(nn.Module):
         shift = shift.view(B, 1, C)  # Reshape shift to (b, 1, c)
         shift = shift.expand(B, T, C)
 
-
         shortcut = x
         x = self.norm_1(x)
         x = scale * x + shift
         x = self.silu(x)
         x = self.linear_1(x)
+        x = self.dropout_1(x)
 
         x = self.norm_2(x)
         x = scale * x + shift
         x = self.silu(x)
         x = self.linear_2(x)
+        x = self.dropout_2(x)
 
         return x + shortcut
 
@@ -232,7 +246,6 @@ def count_parameters(model):
 if __name__ == "__main__":
     # pass
     categories = {'genres': 13, 'composers': 292}
-
     seq_len = 32
     vocab_size = 76
     num_timesteps = 1000
@@ -247,9 +260,12 @@ if __name__ == "__main__":
     # for p in model.parameters():
     #     print(p)
     #
-    # x_ = torch.ones(64, 32, 42)
+    # x_ = torch.ones(64, seq_len, vocab_size)
     # t_ = torch.randint(low=1, high=1000, size=(64, 1))
-    # out = tr(x_, t_)
+    # genres = torch.tensor([-1], dtype=torch.int64)
+    # composers = torch.tensor([-1], dtype=torch.int64)
+    #
+    # out = model(x_, t_, genres, composers)
 
 
 

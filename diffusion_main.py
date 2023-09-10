@@ -24,9 +24,7 @@ logging.basicConfig(format="%(asctime)s - %(levelname)s: %(message)s", level=log
 
 class Diffusion:
 
-    def __init__(self, noise_steps=1000, beta_start=1e-4, beta_end=0.02, batch_size=64, vocab_size=76, time_steps=32):
-
-
+    def __init__(self, noise_steps=1000, beta_start=0.000001, beta_end=0.01, batch_size=64, vocab_size=76, time_steps=32):
 
         self.noise_steps = noise_steps
         self.beta_start = beta_start
@@ -154,7 +152,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 5e-4
+    lr = 6e-4
     batch_size = 64
     current_dir = os.getcwd()
 
@@ -177,10 +175,10 @@ def train():
 
 
     if is_lakh:
-        run_name = "ddpm_lakh_b"
+        run_name = "ddpm_lakh_vb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb_b"
+        run_name = "ddpm_nesmdb_vb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
 
@@ -282,7 +280,7 @@ def train():
             optimizer.step()
             scheduler.step()
 
-            train_count +=1
+            train_count += 1
 
         mean_train_loss = train_loss_sum / train_count
         train_losses.append(mean_train_loss)
