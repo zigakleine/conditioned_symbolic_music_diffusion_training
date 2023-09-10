@@ -244,16 +244,16 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 if __name__ == "__main__":
-    # pass
-    categories = {'genres': 13, 'composers': 292}
-    seq_len = 32
-    vocab_size = 76
-    num_timesteps = 1000
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = TransformerDDPM(categories).to(device)
-    print(model)
-    print(count_parameters(model))
+    pass
+    # categories = {'genres': 13, 'composers': 292}
+    # seq_len = 32
+    # vocab_size = 76
+    # num_timesteps = 1000
+    #
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model = TransformerDDPM(categories).to(device)
+    # print(model)
+    # print(count_parameters(model))
     #
     #
     # summary(model, [(64, 32, 76), (64, 1), (64, 1), (64, 1)], batch_dim=0)
