@@ -12,7 +12,7 @@ import uuid
 
 current_dir = os.getcwd()
 
-file_to_sample_abs_path = "./140_epoch_batch.pkl"
+file_to_sample_abs_path = "./76_epoch_batch.pkl"
 sampled_latents = pickle.load(open(file_to_sample_abs_path, "rb"))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,4 +36,4 @@ sampled_latents = sampled_latents.reshape(sampled_latents.shape[0] * sampled_lat
 decoded_song = vae.decode_sequence(sampled_latents, total_steps, temperature)
 
 generated_midi = db_proc.midi_from_song(decoded_song)
-generated_midi.save("./song_from_latent.mid")
+generated_midi.save("./song_from_latent_vb.mid")

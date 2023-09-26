@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import Dataset
 import pickle
 import json
+import numpy as np
 
 
 class LakhMidiDataset(Dataset):
@@ -12,6 +13,7 @@ class LakhMidiDataset(Dataset):
         self.metadata_folder = "db_metadata"
         self.database_folder = "lakh"
         self.current_dir = os.getcwd()
+        self.encoded_dir = "/storage/local/ssd/zigakleine-workspace"
         self.all_lakh_metadata = []
         self.transform = transform
         self.min_max = min_max
@@ -29,13 +31,17 @@ class LakhMidiDataset(Dataset):
 
     def __getitem__(self, index):
         enc_seq_rel_path = self.all_lakh_metadata[index]["url"]
-        enc_seq_abs_path = os.path.join(self.current_dir, enc_seq_rel_path)
+        # enc_seq_abs_path = os.path.join(self.current_dir, enc_seq_rel_path)
+        enc_seq_abs_path = os.path.join(self.encoded_dir, enc_seq_rel_path)
 
         enc_seq = pickle.load(open(enc_seq_abs_path, "rb"))
         enc_seq = enc_seq[self.all_lakh_metadata[index]["index"]]
 
+        enc_seq_tracks = np.split(enc_seq, 4, axis=0)
+        enc_seq_hstacked = np.hstack(enc_seq_tracks)
+
         if self.transform:
-            enc_seq = self.transform(enc_seq, self.min_max["min"], self.min_max["max"])
+            enc_seq = self.transform(enc_seq_hstacked, self.min_max["min"], self.min_max["max"])
         #
         #{"g":-1, "c":-1}
         return enc_seq, [-1, -1]

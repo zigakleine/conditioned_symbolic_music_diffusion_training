@@ -13,16 +13,16 @@ class TransformerDDPM(nn.Module):
         super(TransformerDDPM, self).__init__()
 
         # self.batch_size = 16
-        self.seq_len = 32
-        self.vocab_size = 76
+        self.seq_len = 16
+        self.vocab_size = 2048
         self.num_timesteps = 1000
 
-        self.embed_size = 768
+        self.embed_size = 512
 
-        self.num_heads = 12
+        self.num_heads = 8
         self.num_layers = 12
 
-        self.num_mlp_layers = 3
+        self.num_mlp_layers = 4
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -211,8 +211,8 @@ class DenseResBlock(nn.Module):
         self.norm_1 = nn.LayerNorm(out_channels)
         self.norm_2 = nn.LayerNorm(out_channels)
 
-        self.dropout_1 = nn.Dropout(dropout)
-        self.dropout_2 = nn.Dropout(dropout)
+        # self.dropout_1 = nn.Dropout(dropout)
+        # self.dropout_2 = nn.Dropout(dropout)
 
         self.silu = nn.SiLU()
 
@@ -230,13 +230,13 @@ class DenseResBlock(nn.Module):
         x = scale * x + shift
         x = self.silu(x)
         x = self.linear_1(x)
-        x = self.dropout_1(x)
+        # x = self.dropout_1(x)
 
         x = self.norm_2(x)
         x = scale * x + shift
         x = self.silu(x)
         x = self.linear_2(x)
-        x = self.dropout_2(x)
+        # x = self.dropout_2(x)
 
         return x + shortcut
 
@@ -244,16 +244,16 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 if __name__ == "__main__":
-    pass
-    # categories = {'genres': 13, 'composers': 292}
-    # seq_len = 32
-    # vocab_size = 76
-    # num_timesteps = 1000
-    #
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model = TransformerDDPM(categories).to(device)
-    # print(model)
-    # print(count_parameters(model))
+    # pass
+    categories = {'genres': 13, 'composers': 292}
+    seq_len = 16
+    vocab_size = 2048
+    num_timesteps = 1000
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = TransformerDDPM(categories).to(device)
+    print(model)
+    print(count_parameters(model))
     #
     #
     # summary(model, [(64, 32, 76), (64, 1), (64, 1), (64, 1)], batch_dim=0)

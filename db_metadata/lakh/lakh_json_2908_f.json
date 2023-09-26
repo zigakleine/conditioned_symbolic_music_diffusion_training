@@ -3818,8 +3818,9 @@
     },
     "f2744944a73fc8b8a93b79d25f199407": {
         "url": "lmd_full/f/f2744944a73fc8b8a93b79d25f199407.mid",
-        "encoded_song_path": "",
-        "encodable": false
+        "encoded_song_path": "lakh_encoded/f/f2744944a73fc8b8a93b79d25f199407_enc.pkl",
+        "encodable": true,
+        "num_sequences": 2
     },
     "f53211b32e4f4d1ec7eb96c9cc847858": {
         "url": "lmd_full/f/f53211b32e4f4d1ec7eb96c9cc847858.mid",
@@ -5248,8 +5249,9 @@
     },
     "fc8423cb9bbfd1cf3549a95db4339895": {
         "url": "lmd_full/f/fc8423cb9bbfd1cf3549a95db4339895.mid",
-        "encoded_song_path": "",
-        "encodable": false
+        "encoded_song_path": "lakh_encoded/f/fc8423cb9bbfd1cf3549a95db4339895_enc.pkl",
+        "encodable": true,
+        "num_sequences": 2
     },
     "f45ad8b4292acd2ae7f6e0b5fe03a7af": {
         "url": "lmd_full/f/f45ad8b4292acd2ae7f6e0b5fe03a7af.mid",
@@ -9236,7 +9238,7 @@
         "url": "lmd_full/f/fb0846034401668be4a8381235e91677.mid",
         "encoded_song_path": "lakh_encoded/f/fb0846034401668be4a8381235e91677_enc.pkl",
         "encodable": true,
-        "num_sequences": 4
+        "num_sequences": 5
     },
     "f09c24d9f77e6ba4f728ed5dd00da7e1": {
         "url": "lmd_full/f/f09c24d9f77e6ba4f728ed5dd00da7e1.mid",
@@ -14325,7 +14327,7 @@
         "url": "lmd_full/f/f50c5c5ba1689913975695364614487c.mid",
         "encoded_song_path": "lakh_encoded/f/f50c5c5ba1689913975695364614487c_enc.pkl",
         "encodable": true,
-        "num_sequences": 38
+        "num_sequences": 39
     },
     "fc27d90836856c738c1bdb2556e422f3": {
         "url": "lmd_full/f/fc27d90836856c738c1bdb2556e422f3.mid",
@@ -18684,7 +18686,7 @@
         "url": "lmd_full/f/f3c89eead1b068cd73051def1c261986.mid",
         "encoded_song_path": "lakh_encoded/f/f3c89eead1b068cd73051def1c261986_enc.pkl",
         "encodable": true,
-        "num_sequences": 2
+        "num_sequences": 3
     },
     "f3c361d2188e60f4461ad0c05adceb24": {
         "url": "lmd_full/f/f3c361d2188e60f4461ad0c05adceb24.mid",
@@ -19671,7 +19673,7 @@
         "url": "lmd_full/f/ff708db3d484cac02efb49f5a9a26333.mid",
         "encoded_song_path": "lakh_encoded/f/ff708db3d484cac02efb49f5a9a26333_enc.pkl",
         "encodable": true,
-        "num_sequences": 1
+        "num_sequences": 2
     },
     "f570129fc49620186b046a870c69a227": {
         "url": "lmd_full/f/f570129fc49620186b046a870c69a227.mid",
@@ -33747,7 +33749,7 @@
         "url": "lmd_full/f/f6edfe84fb10a3e0f47f656ca3e46757.mid",
         "encoded_song_path": "lakh_encoded/f/f6edfe84fb10a3e0f47f656ca3e46757_enc.pkl",
         "encodable": true,
-        "num_sequences": 3
+        "num_sequences": 4
     },
     "fc10e9676dd6d77018040cc2dbcd2f6d": {
         "url": "lmd_full/f/fc10e9676dd6d77018040cc2dbcd2f6d.mid",
@@ -36469,7 +36471,7 @@
         "url": "lmd_full/f/fd5e343259ea126bfaff50d76f149850.mid",
         "encoded_song_path": "lakh_encoded/f/fd5e343259ea126bfaff50d76f149850_enc.pkl",
         "encodable": true,
-        "num_sequences": 3
+        "num_sequences": 4
     },
     "f2b3c18b763d5c95a26aa8f14ac9458a": {
         "url": "lmd_full/f/f2b3c18b763d5c95a26aa8f14ac9458a.mid",
@@ -37089,7 +37091,7 @@
         "url": "lmd_full/f/f0addf32f0afdaac83d2104386c6b7c9.mid",
         "encoded_song_path": "lakh_encoded/f/f0addf32f0afdaac83d2104386c6b7c9_enc.pkl",
         "encodable": true,
-        "num_sequences": 4
+        "num_sequences": 3
     },
     "f688de50324ec56a964f774e38485009": {
         "url": "lmd_full/f/f688de50324ec56a964f774e38485009.mid",
@@ -39879,7 +39881,7 @@
         "url": "lmd_full/f/f918952d6038c7c9463db8e6940d1fa7.mid",
         "encoded_song_path": "lakh_encoded/f/f918952d6038c7c9463db8e6940d1fa7_enc.pkl",
         "encodable": true,
-        "num_sequences": 2
+        "num_sequences": 4
     },
     "f6e0330abf5f1a94545d585a258f20f5": {
         "url": "lmd_full/f/f6e0330abf5f1a94545d585a258f20f5.mid",
@@ -53707,7 +53709,7 @@
         "url": "lmd_full/f/ff28172181740d07953c415af29a4aa8.mid",
         "encoded_song_path": "lakh_encoded/f/ff28172181740d07953c415af29a4aa8_enc.pkl",
         "encodable": true,
-        "num_sequences": 1
+        "num_sequences": 2
     },
     "feac99e3f647970441936bb3870be03a": {
         "url": "lmd_full/f/feac99e3f647970441936bb3870be03a.mid",
@@ -55623,7 +55625,7 @@
         "url": "lmd_full/f/fb5bcb36e10e99e61a47d2e93023adca.mid",
         "encoded_song_path": "lakh_encoded/f/fb5bcb36e10e99e61a47d2e93023adca_enc.pkl",
         "encodable": true,
-        "num_sequences": 2
+        "num_sequences": 3
     },
     "f94ce59af11a8cc453926d6cecab76e5": {
         "url": "lmd_full/f/f94ce59af11a8cc453926d6cecab76e5.mid",
@@ -58976,7 +58978,7 @@
         "url": "lmd_full/f/f9aa6b03d8c3454df7b6ed757f6f22e4.mid",
         "encoded_song_path": "lakh_encoded/f/f9aa6b03d8c3454df7b6ed757f6f22e4_enc.pkl",
         "encodable": true,
-        "num_sequences": 11
+        "num_sequences": 12
     },
     "fd910a19d412fbd28c6677269db479dc": {
         "url": "lmd_full/f/fd910a19d412fbd28c6677269db479dc.mid",

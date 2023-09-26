@@ -19,6 +19,7 @@ class NesmdbMidiDataset(Dataset):
         self.metadata_folder = "db_metadata"
         self.database_folder = "nesmdb"
         self.current_dir = os.getcwd()
+        self.encoded_dir = "/storage/local/ssd/zigakleine-workspace"
         self.all_nesmdb_metadata = []
         self.metadata_filename = "nesmdb_updated2808.pkl"
         nesmdb_metadata_abs_path = os.path.join(self.current_dir, self.metadata_folder, self.database_folder,
@@ -38,10 +39,14 @@ class NesmdbMidiDataset(Dataset):
 
     def __getitem__(self, index):
         enc_seq_rel_path = self.all_nesmdb_metadata[index]["url"]
-        enc_seq_abs_path = os.path.join(self.current_dir, enc_seq_rel_path)
+        # enc_seq_abs_path = os.path.join(self.current_dir, enc_seq_rel_path)
+        enc_seq_abs_path = os.path.join(self.encoded_dir, enc_seq_rel_path)
 
         enc_seq = pickle.load(open(enc_seq_abs_path, "rb"))
         enc_seq = enc_seq[self.all_nesmdb_metadata[index]["index"]]
+
+        enc_seq_tracks = np.split(enc_seq, 4, axis=0)
+        enc_seq_hstacked = np.hstack(enc_seq_tracks)
 
         genre = self.all_nesmdb_metadata[index]["genre"]
         composers = self.all_nesmdb_metadata[index]["composers"]
@@ -50,10 +55,10 @@ class NesmdbMidiDataset(Dataset):
         composer = composers[label_choice[0]]
 
         if self.transform:
-            enc_seq = self.transform(enc_seq, self.min_max["min"], self.min_max["max"])
+            enc_seq_hstacked = self.transform(enc_seq_hstacked, self.min_max["min"], self.min_max["max"])
         #
         #{"g":-1, "c":-1}
-        return enc_seq, [genre, composer]
+        return enc_seq_hstacked, [genre, composer]
 
     def __len__(self):
         return len(self.all_nesmdb_metadata)
