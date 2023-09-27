@@ -36,6 +36,22 @@ import torch
 # plt.show()
 
 import pickle
-categories_indices = pickle.load(open("./pkl_info/slice-mel-512.pkl", "rb"))
+import json
+
+categories_indices = pickle.load(open("./db_metadata/nesmdb/nesmdb_categories.pkl", "rb"))
+
+emotions = {"Q1": 0, "Q2": 1, "Q3": 2, "Q4": 3}
+
+categories_indices["emotions"] = emotions
+
+file = open('./db_metadata/nesmdb/nesmdb_categories.pkl', 'wb')
+pickle.dump(categories_indices, file)
+file.close()
+
+y = json.dumps(categories_indices, indent=4)
+file_json = open('./db_metadata/nesmdb/nesmdb_categories.json', 'w')
+file_json.write(y)
+file_json.close()
+
 
 print(categories_indices)

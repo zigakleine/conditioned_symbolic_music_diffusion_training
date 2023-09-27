@@ -13,9 +13,10 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 import logging
-from models.transformer_film import TransformerDDPM
+from models.transformer_film_emotion import TransformerDDPME, count_parameters
 from lakh_dataset import LakhMidiDataset
 from nesmdb_dataset import NesmdbMidiDataset
+import json
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -40,7 +41,6 @@ class Diffusion:
         self.beta = self.prepare_noise_schedule().to(self.device)
         self.alpha = 1.0 - self.beta
         self.alpha_hat = torch.cumprod(self.alpha, dim=0)
-
 
     def prepare_noise_schedule(self):
         return torch.linspace(self.beta_start, self.beta_end, self.noise_steps)
@@ -87,6 +87,32 @@ class Diffusion:
             model.train()
             return x
 
+    def sample_emotion(self, model, n, emotion, cfg_scale=3):
+        logging.info(f"sampling {n} new latents...")
+        model.eval()
+        with torch.no_grad():
+            x = torch.randn((n, self.time_steps, self.vocab_size)).to(self.device)
+            for i in tqdm(reversed(range(1, self.noise_steps)), position=0):
+            # for i in reversed(range(1, self.noise_steps)):
+                t = (torch.ones(n)*i).long().to(self.device)
+                t_expand = t[:, None]
+                predicted_noise = model(x, t_expand, emotion)
+                if cfg_scale > 0:
+                    uncond_predicted_noise = model(x, t_expand, None)
+                    predicted_noise = torch.lerp(uncond_predicted_noise, predicted_noise, cfg_scale)
+
+                alpha = self.alpha[t][:, None, None]
+                alpha_hat = self.alpha_hat[t][:, None, None]
+                beta = self.beta[t][:, None, None]
+                if i > 1:
+                    noise = torch.randn_like(x)
+                else:
+                    noise = torch.zeros_like(x)
+
+                x = 1 / torch.sqrt(alpha) * (x - ((1 - alpha) / (torch.sqrt(1 - alpha_hat))) * predicted_noise) + torch.sqrt(beta) * noise
+
+            model.train()
+            return x
 
 
 def setup_logging(run_name, current_dir):
@@ -109,9 +135,9 @@ def inverse_data_transform(batch, slices, data_min, data_max):
     # batch = (batch + 1.) / 2.
     batch = (data_max - data_min) * batch + data_min
 
-    transformed = np.random.randn(*batch.shape[:-1], out_channels)
-    transformed[..., slices] = batch
-    batch = transformed
+    # transformed = np.random.randn(*batch.shape[:-1], out_channels)
+    # transformed[..., slices] = batch
+    # batch = transformed
     return batch
 
 def choose_labels(l, is_lakh):
@@ -138,6 +164,18 @@ def choose_labels(l, is_lakh):
     return genres, composers
 
 
+def choose_labels_emotion(l, is_lakh):
+
+    if is_lakh:
+        emotions = None
+    else:
+        if np.random.random() < 0.1:
+            emotions = None
+        else:
+            emotions = l
+
+    return emotions
+
 
 def train():
 
@@ -160,11 +198,10 @@ def train():
 
     categories_path = "./db_metadata/nesmdb/nesmdb_categories.pkl"
     categories_indices = pickle.load(open(categories_path, "rb"))
-    genres_num = len(categories_indices["genres"].keys())
-    composers_num = len(categories_indices["composers"].keys())
-    categories = {"genres": genres_num, "composers": composers_num}
+    emotions_num = len(categories_indices["emotions"].keys())
+    categories = {"emotions": emotions_num}
 
-    model = TransformerDDPM(categories).to(device)
+    model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000, gamma=0.98)
     mse = nn.MSELoss()
@@ -180,7 +217,6 @@ def train():
     else:
         run_name = "ddpm_nesmdb"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
-
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -210,19 +246,42 @@ def train():
 
 
     setup_logging(run_name, current_dir)
-    diffusion = Diffusion()
+    diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vocab_size=model.vocab_size, time_steps=model.seq_len)
 
     print("device is", diffusion.device)
     print("dataset is", run_name)
     print("continue_training", continue_training)
     print("starting from lakh", start_from_pretrained_model)
 
-    slice_ckpt = "./pkl_info/fb256_slices_76.pkl"
-    fb256_slices = pickle.load(open(slice_ckpt, "rb"))
+    # slice_ckpt = "./pkl_info/fb256_slices_76.pkl"
+    # fb256_slices = pickle.load(open(slice_ckpt, "rb"))
     min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
     epochs = 200
 
+    run_info_params = {
+        "run_name": run_name,
+        "continue_training": continue_training,
+        "start_from_lakh": start_from_pretrained_model,
+        "seq_len": model.seq_len,
+        "vocab_size": model.vocab_size,
+        "num_timesteps": model.num_timesteps,
+        "embed_size": model.embed_size,
+        "num_heads": model.num_heads,
+        "num_layers": model.num_layers,
+        "num_mlp_layers": model.num_mlp_layers,
+        "mlp_dims": model.mlp_dims,
+        "beta_start": diffusion.beta_start,
+        "beta_end": diffusion.beta_end,
+        "lr": lr,
+        "batch_size": batch_size,
+        "trainable_params": count_parameters(model),
+    }
+    rip = json.dumps(run_info_params, indent=4)
+    params_abs_path = os.path.join(current_dir, "results", run_name, "run_info_params.json")
+    file_json = open(params_abs_path, 'w')
+    file_json.write(rip)
+    file_json.close()
     #load data
 
     if is_lakh:
@@ -250,7 +309,6 @@ def train():
         starting_epoch = 0
         min_val_loss = min_val_loss_start
 
-
     for epoch in range(epochs):
 
         logging.info(f"Starting epoch {starting_epoch + epoch}:")
@@ -262,15 +320,16 @@ def train():
 
         for step, (batch, l) in enumerate(pbar):
 
-            genre, composer = choose_labels(l, is_lakh)
-            genre = genre.to(device)
-            composer = composer.to(device)
+            # genre, composer = choose_labels(l, is_lakh)
+            emotions = choose_labels_emotion(l, is_lakh)
+            # genre = genre.to(device)
+            # composer = composer.to(device)
+            emotions = emotions.to(device)
             batch = batch.to(device)
-
             t = diffusion.sample_timesteps(batch.shape[0]).to(device)
 
             x_t, noise = diffusion.noise_latents(batch, t)
-            predicted_noise = model(x_t, t, genre, composer)
+            predicted_noise = model(x_t, t, emotions)
 
             loss = mse(noise, predicted_noise)
             train_loss_sum += loss.item()
@@ -298,15 +357,18 @@ def train():
 
             for step, (batch, l) in enumerate(pbar_test):
 
-                genre, composer = choose_labels(l, is_lakh)
-                genre = genre.to(device)
-                composer = composer.to(device)
+                # genre, composer = choose_labels(l, is_lakh)
+                emotions = choose_labels_emotion(l, is_lakh)
+                # genre = emotions.to(device)
+                # composer = composer.to(device)
+                emotions = emotions.to(device)
                 batch = batch.to(device)
 
                 t = diffusion.sample_timesteps(batch.shape[0]).to(device)
 
                 x_t, noise = diffusion.noise_latents(batch, t)
-                predicted_noise = model(x_t, t, genre, composer)
+                # predicted_noise = model(x_t, t, genre, composer)
+                predicted_noise = model(x_t, t, emotions)
                 val_loss = mse(noise, predicted_noise)
                 val_loss_sum += val_loss.item()
 
@@ -324,12 +386,15 @@ def train():
                           "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             torch.save(checkpoint, min_model_abs_path)
 
-        sampled_latents = diffusion.sample(model, 1, torch.tensor([-1], dtype=torch.int64), torch.tensor([-1], dtype=torch.int64), cfg_scale=0)
-        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), fb256_slices, min_max["min"],
+        sampled_latents = diffusion.sample_emotion(model, 1, None, cfg_scale=0)
+        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), None, min_max["min"],
                                                    min_max["max"])
+        batch_split = np.split(batch_transformed[0], 4, axis=1)
+        batch_ = np.vstack(batch_split)
+
         generated_batch_abs_path = os.path.join(current_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
         file = open(generated_batch_abs_path, 'wb')
-        pickle.dump(batch_transformed, file)
+        pickle.dump(batch_, file)
         file.close()
 
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
@@ -378,6 +443,8 @@ def train():
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
     print("ended training at:", formatted)
+
+
 
 if __name__ == "__main__":
     train()
