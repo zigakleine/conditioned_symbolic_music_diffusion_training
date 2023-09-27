@@ -292,8 +292,8 @@ def train():
         dataset = NesmdbMidiDataset(min_max=min_max, transform=normalize_dataset)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
 
-    train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True,  num_workers=5)
-    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True,  num_workers=5)
+    train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True,  num_workers=1)
+    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True,  num_workers=1)
 
     if continue_training:
         train_losses_abs_path = os.path.join(to_save_dir, "results", existing_model_run_name, "train_losses.pkl")
