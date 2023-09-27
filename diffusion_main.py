@@ -324,7 +324,8 @@ def train():
             emotions = choose_labels_emotion(l, is_lakh)
             # genre = genre.to(device)
             # composer = composer.to(device)
-            emotions = emotions.to(device)
+            if emotions is not None:
+                emotions = emotions.to(device)
             batch = batch.to(device)
             t = diffusion.sample_timesteps(batch.shape[0]).to(device)
 
@@ -361,7 +362,8 @@ def train():
                 emotions = choose_labels_emotion(l, is_lakh)
                 # genre = emotions.to(device)
                 # composer = composer.to(device)
-                emotions = emotions.to(device)
+                if emotions is not None:
+                    emotions = emotions.to(device)
                 batch = batch.to(device)
 
                 t = diffusion.sample_timesteps(batch.shape[0]).to(device)

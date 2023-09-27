@@ -22,7 +22,7 @@ class TransformerDDPME(nn.Module):
         self.num_heads = 8
         self.num_layers = 12
 
-        self.num_mlp_layers = 4
+        self.num_mlp_layers = 3
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
