@@ -8,3 +8,4 @@ models/__pycache__
 /multitrack_vae_model
 *.so
 /cat-mel_2bar_big.tar
+/*_epoch_batch.pkl

@@ -125,15 +125,15 @@ def setup_logging(run_name, current_dir):
 
 def normalize_dataset(batch, data_min, data_max):
     """Normalize dataset to range [-1, 1]."""
-    batch = (batch - data_min) / (data_max - data_min)
-    batch = 2. * batch - 1.
+    # batch = (batch - data_min) / (data_max - data_min)
+    # batch = 2. * batch - 1.
     return batch
 
 def inverse_data_transform(batch, slices, data_min, data_max):
 
     batch = batch.numpy()
-    batch = (batch + 1.) / 2.
-    batch = (data_max - data_min) * batch + data_min
+    # batch = (batch + 1.) / 2.
+    # batch = (data_max - data_min) * batch + data_min
 
     # transformed = np.random.randn(*batch.shape[:-1], out_channels)
     # transformed[..., slices] = batch
