@@ -126,13 +126,13 @@ def setup_logging(run_name, current_dir):
 def normalize_dataset(batch, data_min, data_max):
     """Normalize dataset to range [-1, 1]."""
     batch = (batch - data_min) / (data_max - data_min)
-    # batch = 2. * batch - 1.
+    batch = 2. * batch - 1.
     return batch
 
 def inverse_data_transform(batch, slices, data_min, data_max):
 
     batch = batch.numpy()
-    # batch = (batch + 1.) / 2.
+    batch = (batch + 1.) / 2.
     batch = (data_max - data_min) * batch + data_min
 
     # transformed = np.random.randn(*batch.shape[:-1], out_channels)
@@ -193,6 +193,7 @@ def train():
     lr = 5e-4
     batch_size = 512
     current_dir = os.getcwd()
+    to_save_dir = "/storage/local/ssd/zigakleine-workspace"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -245,7 +246,7 @@ def train():
             print(f"starting from zero")
 
 
-    setup_logging(run_name, current_dir)
+    setup_logging(run_name, to_save_dir)
     diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vocab_size=model.vocab_size, time_steps=model.seq_len)
 
     print("device is", diffusion.device)
@@ -278,7 +279,7 @@ def train():
         "trainable_params": count_parameters(model),
     }
     rip = json.dumps(run_info_params, indent=4)
-    params_abs_path = os.path.join(current_dir, "results", run_name, "run_info_params.json")
+    params_abs_path = os.path.join(to_save_dir, "results", run_name, "run_info_params.json")
     file_json = open(params_abs_path, 'w')
     file_json.write(rip)
     file_json.close()
@@ -295,10 +296,10 @@ def train():
     test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
 
     if continue_training:
-        train_losses_abs_path = os.path.join(current_dir, "results", existing_model_run_name, "train_losses.pkl")
+        train_losses_abs_path = os.path.join(to_save_dir, "results", existing_model_run_name, "train_losses.pkl")
         train_losses = pickle.load(open(train_losses_abs_path, "rb"))
 
-        val_losses_abs_path = os.path.join(current_dir, "results", existing_model_run_name, "val_losses.pkl")
+        val_losses_abs_path = os.path.join(to_save_dir, "results", existing_model_run_name, "val_losses.pkl")
         val_losses = pickle.load(open(val_losses_abs_path, "rb"))
 
         starting_epoch = len(train_losses)
@@ -383,7 +384,7 @@ def train():
         if mean_val_loss < min_val_loss:
             min_val_loss = mean_val_loss
             logging.info(f"!!! New min validation loss at epoch {starting_epoch + epoch}, mean validation loss: {mean_val_loss}")
-            min_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
+            min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
                           "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             torch.save(checkpoint, min_model_abs_path)
@@ -394,36 +395,36 @@ def train():
         batch_split = np.split(batch_transformed[0], 4, axis=1)
         batch_ = np.vstack(batch_split)
 
-        generated_batch_abs_path = os.path.join(current_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
+        generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
         file = open(generated_batch_abs_path, 'wb')
         pickle.dump(batch_, file)
         file.close()
 
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
                       "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-        min_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
+        min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
         torch.save(checkpoint, min_model_abs_path)
 
         if epoch == 99:
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
                           "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-            hund_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
+            hund_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
             torch.save(checkpoint, hund_model_abs_path)
 
         if epoch == 149:
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
                           "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-            hundten_model_abs_path = os.path.join(current_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
+            hundten_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
             torch.save(checkpoint, hundten_model_abs_path)
 
         #  picklaj losse
 
-        train_losses_abs_path = os.path.join(current_dir, "results", run_name, "train_losses.pkl")
+        train_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "train_losses.pkl")
         file = open(train_losses_abs_path, 'wb')
         pickle.dump(train_losses, file)
         file.close()
 
-        val_losses_abs_path = os.path.join(current_dir, "results", run_name, "val_losses.pkl")
+        val_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "val_losses.pkl")
         file = open(val_losses_abs_path, 'wb')
         pickle.dump(val_losses, file)
         file.close()
@@ -438,7 +439,7 @@ def train():
         plt.ylabel('Loss')
         plt.title('Validation and Training Losses')
         plt.legend()
-        loss_plot_abs_path = os.path.join(current_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
+        loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
         plt.savefig(loss_plot_abs_path)
         plt.clf()
 
