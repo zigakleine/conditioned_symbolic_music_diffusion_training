@@ -190,8 +190,8 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1e-3
-    batch_size = 512
+    lr = 5e-4
+    batch_size = 256
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
 
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb_2709_s2"
+        run_name = "ddpm_nesmdb_2709_s3"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
     if start_from_pretrained_model:
@@ -355,6 +355,7 @@ def train():
         # pbar_test = test_loader
         pbar_test = tqdm(test_loader)
 
+        model.eval()
         with torch.no_grad():
 
             for step, (batch, l) in enumerate(pbar_test):
@@ -380,6 +381,7 @@ def train():
             mean_val_loss = val_loss_sum / val_count
             val_losses.append(mean_val_loss)
             logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
+        model.train()
 
         if mean_val_loss < min_val_loss:
             min_val_loss = mean_val_loss

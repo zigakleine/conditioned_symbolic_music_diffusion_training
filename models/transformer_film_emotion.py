@@ -17,10 +17,10 @@ class TransformerDDPME(nn.Module):
 
         self.num_timesteps = 1000
 
-        self.embed_size = 512
+        self.embed_size = 1024
 
         self.num_heads = 8
-        self.num_layers = 12
+        self.num_layers = 6
 
         self.num_mlp_layers = 4
         self.mlp_dims = 2048
@@ -59,7 +59,7 @@ class TransformerDDPME(nn.Module):
 
         tok_embedding = self.token_embedding(x)  # tok_embedding =  B, T, C
         pos_embedding = self.position_embedding(torch.arange(T, device=self.device))   # pos_embedding =  T, C
-        # pos_embedding = self.transformer_timestep_embedding(torch.arange(T, device=self.device), self.embed_size)  # pos_embedding =  T, C
+        # pos_embedding_ = self.transformer_timestep_embedding(torch.arange(T, device=self.device), self.embed_size)  # pos_embedding =  T, C
         # print(pos_embedding.requires_grad)
 
         x = tok_embedding + pos_embedding
@@ -245,11 +245,11 @@ if __name__ == "__main__":
     print(model)
     print(count_parameters(model))
 
-    x_ = torch.ones(64, seq_len, vocab_size)
-    t_ = torch.randint(low=1, high=1000, size=(64, 1), dtype=torch.int64)
-    emotions = torch.ones(size=(64,), dtype=torch.int64)
-    # emotions = None
-    out = model(x_, t_, emotions)
+    # x_ = torch.ones(64, seq_len, vocab_size)
+    # t_ = torch.randint(low=1, high=1000, size=(64, 1), dtype=torch.int64)
+    # emotions = torch.ones(size=(64,), dtype=torch.int64)
+    # # emotions = None
+    # out = model(x_, t_, emotions)
 
     #
     #
