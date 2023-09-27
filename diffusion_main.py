@@ -130,7 +130,7 @@ def normalize_dataset(batch, data_min, data_max):
     return batch
 
 def inverse_data_transform(batch, slices, data_min, data_max):
-    out_channels = 512
+
     batch = batch.numpy()
     # batch = (batch + 1.) / 2.
     batch = (data_max - data_min) * batch + data_min
@@ -191,7 +191,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 5e-4
-    batch_size = 64
+    batch_size = 128
     current_dir = os.getcwd()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
