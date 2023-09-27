@@ -215,7 +215,7 @@ def train():
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb"
+        run_name = "ddpm_nesmdb_2709_s"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
     if start_from_pretrained_model:
