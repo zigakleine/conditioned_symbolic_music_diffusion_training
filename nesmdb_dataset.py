@@ -4,7 +4,6 @@ from torch.utils.data import Dataset
 import pickle
 import json
 import numpy as np
-import time
 
 class NesmdbMidiDataset(Dataset):
 
@@ -38,7 +37,6 @@ class NesmdbMidiDataset(Dataset):
                             self.all_nesmdb_metadata.append(sequence)
 
     def __getitem__(self, index):
-        ts = time.time()
         enc_seq_rel_path = self.all_nesmdb_metadata[index]["url"]
         # enc_seq_abs_path = os.path.join(self.current_dir, enc_seq_rel_path)
         enc_seq_abs_path = os.path.join(self.encoded_dir, enc_seq_rel_path)
@@ -59,7 +57,6 @@ class NesmdbMidiDataset(Dataset):
             enc_seq_hstacked = self.transform(enc_seq_hstacked, self.min_max["min"], self.min_max["max"])
         #
         #{"g":-1, "c":-1}
-        print(time.time() - ts)
         return enc_seq_hstacked, [genre, composer]
 
     def __len__(self):

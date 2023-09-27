@@ -4,6 +4,7 @@ from nesmdb_dataset import NesmdbMidiDataset
 from lakh_dataset import LakhMidiDataset
 import torch
 import pickle
+import time
 
 def normalize_dataset(batch, data_min, data_max):
     """Normalize dataset to range [-1, 1]."""
@@ -36,5 +37,11 @@ elif dataset == "lakh":
 train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
 
+ts = time.time()
+ts0 = ts
 for step, (batch, l) in enumerate(train_loader):
     print("shape", batch.shape)
+    print(time.time() - ts)
+    ts = time.time()
+
+print("time-for-all:", time.time() - ts0)
