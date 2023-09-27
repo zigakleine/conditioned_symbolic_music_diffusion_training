@@ -28,7 +28,7 @@ class TransformerDDPME(nn.Module):
 
         self.token_embedding = nn.Linear(self.vocab_size, self.embed_size)
         self.position_embedding = nn.Embedding(self.seq_len, self.embed_size)
-        # self.timestep_embedding = nn.Embedding(self.num_timesteps, self.embed_size)
+        self.timestep_embedding = nn.Embedding(self.num_timesteps, self.embed_size)
 
         self.layers = nn.ModuleList([EncoderLayer(self.embed_size, self.num_heads) for _ in range(self.num_layers)])
 
@@ -56,14 +56,15 @@ class TransformerDDPME(nn.Module):
     def forward(self, x, t, emotions):
 
         B, T, C = x.shape
-        # t1 = t[:, None].repeat(1, 8)
+        t1 = t[:, None].repeat(1, 8)
 
-        tok_embedding = self.token_embedding(x)  # tok_embedding =  B, T, C
-        pos_embedding = self.transformer_timestep_embedding(torch.arange(T, device=self.device), self.embed_size)  # pos_embedding =  T, C
+        # tok_embedding = self.token_embedding(x)  # tok_embedding =  B, T, C
+        x = self.token_embedding(x)  # tok_embedding =  B, T, C
+        # pos_embedding = self.transformer_timestep_embedding(torch.arange(T, device=self.device), self.embed_size)  # pos_embedding =  T, C
         # print(pos_embedding.requires_grad)
-        # timestep_embedding = self.timestep_embedding(t1)  # timestep_embedding = B, T, C
-        x = tok_embedding + pos_embedding
-        # x += timestep_embedding
+        timestep_embedding = self.timestep_embedding(t1)  # timestep_embedding = B, T, C
+        # x = tok_embedding + pos_embedding
+        x += timestep_embedding
 
         for layer in self.layers:
             x = layer(x)

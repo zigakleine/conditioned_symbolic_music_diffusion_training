@@ -125,15 +125,15 @@ def setup_logging(run_name, current_dir):
 
 def normalize_dataset(batch, data_min, data_max):
     """Normalize dataset to range [-1, 1]."""
-    # batch = (batch - data_min) / (data_max - data_min)
-    # batch = 2. * batch - 1.
+    batch = (batch - data_min) / (data_max - data_min)
+    batch = 2. * batch - 1.
     return batch
 
 def inverse_data_transform(batch, slices, data_min, data_max):
 
     batch = batch.numpy()
-    # batch = (batch + 1.) / 2.
-    # batch = (data_max - data_min) * batch + data_min
+    batch = (batch + 1.) / 2.
+    batch = (data_max - data_min) * batch + data_min
 
     # transformed = np.random.randn(*batch.shape[:-1], out_channels)
     # transformed[..., slices] = batch
@@ -190,7 +190,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 5e-4
+    lr = 1e-3
     batch_size = 512
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -204,7 +204,7 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
     mse = nn.MSELoss()
 
     is_lakh = False
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb_2709_s"
+        run_name = "ddpm_nesmdb_2709_s2"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
 
     if start_from_pretrained_model:
