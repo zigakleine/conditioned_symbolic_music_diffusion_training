@@ -13,8 +13,8 @@ def normalize_dataset(batch, data_min, data_max):
     return batch
 
 
-# dataset = "nesmdb"
-dataset = "lakh"
+dataset = "nesmdb"
+# dataset = "lakh"
 
 
 if dataset == "nesmdb":
