@@ -191,7 +191,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 5e-4
-    batch_size = 256
+    batch_size = 512
     current_dir = os.getcwd()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
