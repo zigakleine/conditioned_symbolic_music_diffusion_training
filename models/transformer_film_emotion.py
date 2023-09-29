@@ -20,9 +20,9 @@ class TransformerDDPME(nn.Module):
         self.embed_size = 1024
 
         self.num_heads = 8
-        self.num_layers = 6
+        self.num_layers = 16
 
-        self.num_mlp_layers = 4
+        self.num_mlp_layers = 6
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -144,15 +144,16 @@ class DenseFiLM(nn.Module):
         self.num_emotions = categories["emotions"]
 
         self.embed_channels = embed_channels
+        self.embed_chanels_mul = self.embed_channels*4
         self.out_channels = out_channels
-        self.linear_1 = nn.Linear(self.embed_channels,  self.embed_channels*4)
-        self.linear_2 = nn.Linear(self.embed_channels*4,  self.embed_channels*4)
+        self.linear_1 = nn.Linear(self.embed_channels,  self.embed_chanels_mul)
+        self.linear_2 = nn.Linear(self.embed_chanels_mul,  self.embed_chanels_mul)
 
         if self.num_emotions > 0:
-            self.emotions_emb = nn.Embedding(self.num_emotions, self.embed_channels*4)
+            self.emotions_emb = nn.Embedding(self.num_emotions, self.embed_chanels_mul)
 
-        self.scale = nn.Linear(self.embed_channels*4,  self.out_channels)
-        self.shift = nn.Linear(self.embed_channels*4,  self.out_channels)
+        self.scale = nn.Linear(self.embed_chanels_mul,  self.out_channels)
+        self.shift = nn.Linear(self.embed_chanels_mul,  self.out_channels)
 
         self.silu = nn.SiLU()
 

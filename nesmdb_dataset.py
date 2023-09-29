@@ -20,6 +20,7 @@ class NesmdbMidiDataset(Dataset):
         self.database_folder = "nesmdb"
         self.current_dir = os.getcwd()
         self.encoded_dir = "/storage/local/ssd/zigakleine-workspace"
+        # self.encoded_dir = os.getcwd()
         self.all_nesmdb_metadata = []
         self.metadata_filename = "nesmdb_updated2808.pkl"
         nesmdb_metadata_abs_path = os.path.join(self.current_dir, self.metadata_folder, self.database_folder,
@@ -58,7 +59,7 @@ class NesmdbMidiDataset(Dataset):
         # composer = composers[label_choice[0]]
 
         if self.transform:
-            enc_seq_hstacked = self.transform(enc_seq_hstacked, self.min_max["min"], self.min_max["max"])
+            enc_seq_hstacked = self.transform(enc_seq_hstacked, -14., 14.)
         #
         #{"g":-1, "c":-1}
         # return enc_seq_hstacked, [genre, composer]

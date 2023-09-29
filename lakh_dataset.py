@@ -41,7 +41,7 @@ class LakhMidiDataset(Dataset):
         enc_seq_hstacked = np.hstack(enc_seq_tracks)
 
         if self.transform:
-            enc_seq_hstacked = self.transform(enc_seq_hstacked, self.min_max["min"], self.min_max["max"])
+            enc_seq_hstacked = self.transform(enc_seq_hstacked, -14., 14.)
         #
         #{"g":-1, "c":-1}
         # return enc_seq_hstacked, [-1, -1]

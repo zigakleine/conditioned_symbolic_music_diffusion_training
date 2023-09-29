@@ -127,6 +127,7 @@ def normalize_dataset(batch, data_min, data_max):
     """Normalize dataset to range [-1, 1]."""
     batch = (batch - data_min) / (data_max - data_min)
     batch = 2. * batch - 1.
+    # print("batch-mean-", batch.mean(axis=(0, 1)))
     return batch
 
 def inverse_data_transform(batch, slices, data_min, data_max):
@@ -190,10 +191,11 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 5e-4
+    lr = 1e-4
     batch_size = 256
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
+    # to_save_dir = os.getcwd()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -216,8 +218,8 @@ def train():
         run_name = "ddpm_lakh"
         min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
     else:
-        run_name = "ddpm_nesmdb_2709_s3"
-        min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
+        run_name = "ddpm_nesmdb_3009_s1"
+        min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -292,8 +294,8 @@ def train():
         dataset = NesmdbMidiDataset(min_max=min_max, transform=normalize_dataset)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
 
-    train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True,  num_workers=1)
-    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True,  num_workers=1)
+    train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True )
 
     if continue_training:
         train_losses_abs_path = os.path.join(to_save_dir, "results", existing_model_run_name, "train_losses.pkl")
@@ -321,10 +323,7 @@ def train():
 
         for step, (batch, l) in enumerate(pbar):
 
-            # genre, composer = choose_labels(l, is_lakh)
             emotions = choose_labels_emotion(l, is_lakh)
-            # genre = genre.to(device)
-            # composer = composer.to(device)
             if emotions is not None:
                 emotions = emotions.to(device)
             batch = batch.to(device)
@@ -360,10 +359,8 @@ def train():
 
             for step, (batch, l) in enumerate(pbar_test):
 
-                # genre, composer = choose_labels(l, is_lakh)
                 emotions = choose_labels_emotion(l, is_lakh)
-                # genre = emotions.to(device)
-                # composer = composer.to(device)
+
                 if emotions is not None:
                     emotions = emotions.to(device)
                 batch = batch.to(device)
@@ -371,7 +368,7 @@ def train():
                 t = diffusion.sample_timesteps(batch.shape[0]).to(device)
 
                 x_t, noise = diffusion.noise_latents(batch, t)
-                # predicted_noise = model(x_t, t, genre, composer)
+
                 predicted_noise = model(x_t, t, emotions)
                 val_loss = mse(noise, predicted_noise)
                 val_loss_sum += val_loss.item()
