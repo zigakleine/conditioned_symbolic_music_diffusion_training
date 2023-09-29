@@ -192,7 +192,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 1e-4
-    batch_size = 128
+    batch_size = 100
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
