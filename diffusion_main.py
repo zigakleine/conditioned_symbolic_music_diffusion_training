@@ -60,34 +60,7 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.noise_steps, size=(n, 1))
 
-    def sample(self, model, n, genres, composers, cfg_scale=3):
-        logging.info(f"sampling {n} new latents...")
-        model.eval()
-        with torch.no_grad():
-            x = torch.randn((n, self.time_steps, self.vocab_size)).to(self.device)
-            for i in tqdm(reversed(range(1, self.noise_steps)), position=0):
-            # for i in reversed(range(1, self.noise_steps)):
-                t = (torch.ones(n)*i).long().to(self.device)
-                t_expand = t[:, None]
-                predicted_noise = model(x, t_expand, genres, composers)
-                if cfg_scale > 0:
-                    uncond_predicted_noise = model(x, t_expand, torch.tensor([-1], dtype=torch.int64), torch.tensor([-1], dtype=torch.int64))
-                    predicted_noise = torch.lerp(uncond_predicted_noise, predicted_noise, cfg_scale)
-
-                alpha = self.alpha[t][:, None, None]
-                alpha_hat = self.alpha_hat[t][:, None, None]
-                beta = self.beta[t][:, None, None]
-                if i > 1:
-                    noise = torch.randn_like(x)
-                else:
-                    noise = torch.zeros_like(x)
-
-                x = 1 / torch.sqrt(alpha) * (x - ((1 - alpha) / (torch.sqrt(1 - alpha_hat))) * predicted_noise) + torch.sqrt(beta) * noise
-
-            model.train()
-            return x
-
-    def sample_emotion(self, model, n, emotion, cfg_scale=3):
+    def sample(self, model, n, emotion, cfg_scale=3):
         logging.info(f"sampling {n} new latents...")
         model.eval()
         with torch.no_grad():
@@ -130,7 +103,7 @@ def normalize_dataset(batch, data_min, data_max):
     # print("batch-mean-", batch.mean(axis=(0, 1)))
     return batch
 
-def inverse_data_transform(batch, slices, data_min, data_max):
+def inverse_data_transform(batch, data_min, data_max):
 
     batch = batch.numpy()
     batch = (batch + 1.) / 2.
@@ -191,7 +164,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1e-4
+    lr = 1e-3
     batch_size = 64
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -199,10 +172,10 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    categories_path = "./db_metadata/nesmdb/nesmdb_categories.pkl"
-    categories_indices = pickle.load(open(categories_path, "rb"))
-    emotions_num = len(categories_indices["emotions"].keys())
-    categories = {"emotions": emotions_num}
+    # categories_path = "./db_metadata/nesmdb/nesmdb_categories.pkl"
+    # categories_indices = pickle.load(open(categories_path, "rb"))
+    # emotions_num = len(categories_indices["emotions"].keys())
+    categories = {"emotions": 4}
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
@@ -216,10 +189,9 @@ def train():
 
     if is_lakh:
         run_name = "ddpm_lakh"
-        min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
+
     else:
-        run_name = "ddpm_nesmdb_3009_s1"
-        min_max_ckpt_path = "./pkl_info/lakh_min_max.pkl"
+        run_name = "ddpm_nesmdb_3009_s2"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -256,9 +228,6 @@ def train():
     print("continue_training", continue_training)
     print("starting from lakh", start_from_pretrained_model)
 
-    # slice_ckpt = "./pkl_info/fb256_slices_76.pkl"
-    # fb256_slices = pickle.load(open(slice_ckpt, "rb"))
-    min_max = pickle.load(open(min_max_ckpt_path, "rb"))
 
     epochs = 200
 
@@ -288,10 +257,10 @@ def train():
     #load data
 
     if is_lakh:
-        dataset = LakhMidiDataset(min_max=min_max, transform=normalize_dataset)
+        dataset = LakhMidiDataset( transform=normalize_dataset)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [272702, 8434])
     else:
-        dataset = NesmdbMidiDataset(min_max=min_max, transform=normalize_dataset)
+        dataset = NesmdbMidiDataset(transform=normalize_dataset)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
 
     train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
@@ -388,9 +357,8 @@ def train():
                           "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             torch.save(checkpoint, min_model_abs_path)
 
-        sampled_latents = diffusion.sample_emotion(model, 1, None, cfg_scale=0)
-        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), None, min_max["min"],
-                                                   min_max["max"])
+        sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
+        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14.)
         batch_split = np.split(batch_transformed[0], 4, axis=1)
         batch_ = np.vstack(batch_split)
 
