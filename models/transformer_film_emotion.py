@@ -22,7 +22,7 @@ class TransformerDDPME(nn.Module):
 
         # self.num_heads = 12
         self.num_heads = 8
-        self.num_layers = 7
+        self.num_layers = 6
 
         # self.num_mlp_layers = 3
         self.num_mlp_layers = 4
