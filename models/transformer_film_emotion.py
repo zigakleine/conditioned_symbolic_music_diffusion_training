@@ -17,10 +17,10 @@ class TransformerDDPME(nn.Module):
 
         self.num_timesteps = 1000
 
-        self.embed_size = 2048
+        self.embed_size = 2280
 
-        self.num_heads = 8
-        self.num_layers = 5
+        self.num_heads = 12
+        self.num_layers = 6
 
         self.num_mlp_layers = 3
         self.mlp_dims = 2048
@@ -86,7 +86,7 @@ class EncoderLayer(nn.Module):
 
         super(EncoderLayer, self).__init__()
 
-        dim_feedforward = embed_size * 4
+        dim_feedforward = embed_size * 2
         self.self_attn = nn.MultiheadAttention(embed_size, num_heads, dropout=dropout, batch_first=True)
 
         self.linear_1 = nn.Linear(embed_size, dim_feedforward)
