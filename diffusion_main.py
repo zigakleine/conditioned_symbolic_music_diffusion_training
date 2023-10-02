@@ -164,7 +164,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1e-4
+    lr = 3e-4
     batch_size = 64
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -191,7 +191,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_0110_s1"
+        run_name = "ddpm_nesmdb_0210_s1"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"

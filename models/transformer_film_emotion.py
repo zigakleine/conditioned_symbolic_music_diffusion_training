@@ -17,11 +17,11 @@ class TransformerDDPME(nn.Module):
 
         self.num_timesteps = 1000
 
-        self.embed_size = 2280
-        # self.embed_size = 2048
+        # self.embed_size = 2280
+        self.embed_size = 2048
 
-        self.num_heads = 12
-        # self.num_heads = 8
+        # self.num_heads = 12
+        self.num_heads = 8
         self.num_layers = 6
 
         self.num_mlp_layers = 3
@@ -89,7 +89,7 @@ class EncoderLayer(nn.Module):
 
         super(EncoderLayer, self).__init__()
 
-        dim_feedforward = embed_size * 2
+        dim_feedforward = embed_size * 4
         self.self_attn = nn.MultiheadAttention(embed_size, num_heads, dropout=dropout, batch_first=True)
 
         self.linear_1 = nn.Linear(embed_size, dim_feedforward)
@@ -147,7 +147,7 @@ class DenseFiLM(nn.Module):
         self.num_emotions = categories["emotions"]
 
         self.embed_channels = embed_channels
-        self.embed_chanels_mul = self.embed_channels*2
+        self.embed_chanels_mul = self.embed_channels * 2
         self.out_channels = out_channels
         self.linear_1 = nn.Linear(self.embed_channels,  self.embed_chanels_mul)
         self.linear_2 = nn.Linear(self.embed_chanels_mul,  self.embed_chanels_mul)
