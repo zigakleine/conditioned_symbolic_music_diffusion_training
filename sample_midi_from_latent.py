@@ -7,12 +7,10 @@ from models.transformer_film import TransformerDDPM
 from singletrack_VAE import singletrack_vae, db_processing
 import uuid
 
-min_max_ckpt_path = "./pkl_info/nesmdb_min_max.pkl"
-
 
 current_dir = os.getcwd()
 
-file_to_sample_abs_path = "./12*+0*p1-p2-tr-no.pkl"
+file_to_sample_abs_path = "./100_epoch_batch.pkl"
 sampled_latents = pickle.load(open(file_to_sample_abs_path, "rb"))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
