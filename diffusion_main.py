@@ -215,7 +215,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_0410_s2"
+        run_name = "ddpm_nesmdb_0610_s1"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
