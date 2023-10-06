@@ -13,19 +13,16 @@ class TransformerDDPME(nn.Module):
         super(TransformerDDPME, self).__init__()
 
         self.seq_len = 16
-        self.vocab_size = 2048
+        self.vocab_size = 168
 
         self.num_timesteps = 1000
 
-        self.embed_size = 2460
-        # self.embed_size = 2048
+        self.embed_size = 512
 
-        self.num_heads = 12
-        # self.num_heads = 8
-        self.num_layers = 6
+        self.num_heads = 8
+        self.num_layers = 8
 
         self.num_mlp_layers = 4
-        # self.num_mlp_layers = 4
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -147,7 +144,7 @@ class DenseFiLM(nn.Module):
         self.num_emotions = categories["emotions"]
 
         self.embed_channels = embed_channels
-        self.embed_chanels_mul = self.embed_channels * 2
+        self.embed_chanels_mul = self.embed_channels * 4
         self.out_channels = out_channels
         self.linear_1 = nn.Linear(self.embed_channels,  self.embed_chanels_mul)
         self.linear_2 = nn.Linear(self.embed_chanels_mul,  self.embed_chanels_mul)
@@ -240,7 +237,7 @@ if __name__ == "__main__":
     # pass
     categories = {'emotions': 4}
     seq_len = 16
-    vocab_size = 2048
+    vocab_size = 168
     num_timesteps = 1000
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

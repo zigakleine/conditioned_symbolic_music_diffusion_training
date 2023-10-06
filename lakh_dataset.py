@@ -8,7 +8,7 @@ import numpy as np
 
 class LakhMidiDataset(Dataset):
 
-    def __init__(self, transform=None):
+    def __init__(self, transform=None, std_dev_masks=None):
         self.subdirectories = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
         self.metadata_folder = "db_metadata"
         self.database_folder = "lakh"
@@ -36,11 +36,13 @@ class LakhMidiDataset(Dataset):
         enc_seq = pickle.load(open(enc_seq_abs_path, "rb"))
         enc_seq = enc_seq[self.all_lakh_metadata[index]["index"]]
 
-        enc_seq_tracks = np.split(enc_seq, 4, axis=0)
-        enc_seq_hstacked = np.hstack(enc_seq_tracks)
 
         if self.transform:
-            enc_seq_hstacked = self.transform(enc_seq_hstacked, -14., 14.)
+            enc_seq = self.transform(enc_seq, -14., 14.)
+
+
+        enc_seq_tracks = np.split(enc_seq, 4, axis=0)
+        enc_seq_hstacked = np.hstack(enc_seq_tracks)
 
         return enc_seq_hstacked, -1
 

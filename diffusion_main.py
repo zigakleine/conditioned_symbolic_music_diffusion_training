@@ -96,23 +96,47 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "generated"), exist_ok=True)
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
-def normalize_dataset(batch, data_min, data_max):
+def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
     # batch = (batch - data_min) / (data_max - data_min)
     # batch = 2. * batch - 1.
     # print("batch-mean-", batch.mean(axis=(0, 1)))
-    return batch
 
-def inverse_data_transform(batch, data_min, data_max):
+    enc_tracks = np.split(batch, 4, axis=0)
+    enc_tracks_reduced = []
+    for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
 
-    batch = batch.numpy()
+        enc_track_reduced = enc_track[:, std_dev_mask]
+        enc_tracks_reduced.append(enc_track_reduced)
+
+    enc_tracks_reduced = np.vstack(enc_tracks_reduced)
+
+    return enc_tracks_reduced
+
+def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
+
+
     # batch = (batch + 1.) / 2.
     # batch = (data_max - data_min) * batch + data_min
+    batch = batch.numpy()
+    batch_ = []
+    for enc_tracks in batch:
 
-    # transformed = np.random.randn(*batch.shape[:-1], out_channels)
-    # transformed[..., slices] = batch
-    # batch = transformed
-    return batch
+        enc_tracks_split = np.split(enc_tracks, 4, axis=1)
+
+        enc_tracks_reconstructed = []
+        for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
+            enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
+            enc_track_reconstructed[..., std_devs_mask] = enc_track
+            enc_tracks_reconstructed.append(enc_track_reconstructed)
+            # transformed = np.random.randn(*batch.shape[:-1], out_channels)
+            # transformed[..., slices] = batch
+            # batch = transformed
+
+        enc_tracks_reconstructed = np.vstack(enc_tracks_reconstructed)
+        batch_.append(enc_tracks_reconstructed)
+
+    return np.array(batch_)
 
 def choose_labels(l, is_lakh):
 
@@ -254,13 +278,28 @@ def train():
     file_json = open(params_abs_path, 'w')
     file_json.write(rip)
     file_json.close()
+
+    std_devs_tracks = pickle.load(open("./std_devs_singletrack_2.pkl", "rb"))
+    std_devs_masks = []
+    num_latents = 42
+
+    for std_dev_track in std_devs_tracks:
+        std_dev_track = std_dev_track[:num_latents]
+        std_dev_idx_track = [i for i, dev in std_dev_track]
+        std_dev_idx_track = np.array(std_dev_idx_track)
+
+        std_dev_mask = np.zeros((512,), dtype=bool)
+        std_dev_mask[std_dev_idx_track] = True
+
+        std_devs_masks.append(std_dev_mask)
+
     #load data
 
     if is_lakh:
-        dataset = LakhMidiDataset( transform=normalize_dataset)
+        dataset = LakhMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [272702, 8434])
     else:
-        dataset = NesmdbMidiDataset(transform=normalize_dataset)
+        dataset = NesmdbMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
 
     train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
@@ -358,13 +397,11 @@ def train():
             torch.save(checkpoint, min_model_abs_path)
 
         sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14.)
-        batch_split = np.split(batch_transformed[0], 4, axis=1)
-        batch_ = np.vstack(batch_split)
+        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
 
         generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
         file = open(generated_batch_abs_path, 'wb')
-        pickle.dump(batch_, file)
+        pickle.dump(batch_transformed, file)
         file.close()
 
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),

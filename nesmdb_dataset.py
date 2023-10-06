@@ -8,7 +8,7 @@ import numpy as np
 
 class NesmdbMidiDataset(Dataset):
 
-    def __init__(self, transform=None):
+    def __init__(self, transform=None, std_dev_masks=None):
 
         categories_path = "./db_metadata/nesmdb/nesmdb_categories.pkl"
         categories_indices = pickle.load(open(categories_path, "rb"))
@@ -22,6 +22,7 @@ class NesmdbMidiDataset(Dataset):
         # self.encoded_dir = os.getcwd()
         self.all_nesmdb_metadata = []
         self.metadata_filename = "nesmdb_updated2808.pkl"
+        self.std_dev_masks = std_dev_masks
         nesmdb_metadata_abs_path = os.path.join(self.current_dir, self.metadata_folder, self.database_folder,
                                                 self.metadata_filename)
         metadata = pickle.load(open(nesmdb_metadata_abs_path, "rb"))
@@ -44,14 +45,14 @@ class NesmdbMidiDataset(Dataset):
         enc_seq = pickle.load(open(enc_seq_abs_path, "rb"))
         enc_seq = enc_seq[self.all_nesmdb_metadata[index]["index"]]
 
+        if self.transform:
+            enc_seq = self.transform(enc_seq, -14., 14., self.std_dev_masks)
+
         enc_seq_tracks = np.split(enc_seq, 4, axis=0)
         enc_seq_hstacked = np.hstack(enc_seq_tracks)
 
         emotion = self.all_nesmdb_metadata[index]["emotion"]
 
-
-        if self.transform:
-            enc_seq_hstacked = self.transform(enc_seq_hstacked, -14., 14.)
 
         return enc_seq_hstacked, emotion
 
