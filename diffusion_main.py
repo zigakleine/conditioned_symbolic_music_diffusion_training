@@ -188,7 +188,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 2e-4
+    lr = 1e-3
     batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
