@@ -305,7 +305,7 @@ def train():
         train_ds, test_ds = torch.utils.data.random_split(dataset, [5, 5])
 
     train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True )
+    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
 
     if continue_training:
         train_losses_abs_path = os.path.join(to_save_dir, "results", existing_model_run_name, "train_losses.pkl")
@@ -362,33 +362,32 @@ def train():
         logging.info(f"Validation for epoch {starting_epoch + epoch}:")
 
         # pbar_test = test_loader
-        pbar_test = tqdm(test_loader)
-
-        model.eval()
-        with torch.no_grad():
-
-            for step, (batch, l) in enumerate(pbar_test):
-
-                emotions = choose_labels_emotion(l, is_lakh)
-
-                if emotions is not None:
-                    emotions = emotions.to(device)
-                batch = batch.to(device)
-
-                t = diffusion.sample_timesteps(batch.shape[0]).to(device)
-
-                x_t, noise = diffusion.noise_latents(batch, t)
-
-                predicted_noise = model(x_t, t, emotions)
-                val_loss = mse(noise, predicted_noise)
-                val_loss_sum += val_loss.item()
-
-                val_count += 1
-
-            mean_val_loss = val_loss_sum / val_count
-            val_losses.append(mean_val_loss)
-            logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
-        model.train()
+        # pbar_test = tqdm(test_loader)
+        # model.eval()
+        # with torch.no_grad():
+        #
+        #     for step, (batch, l) in enumerate(pbar_test):
+        #
+        #         emotions = choose_labels_emotion(l, is_lakh)
+        #
+        #         if emotions is not None:
+        #             emotions = emotions.to(device)
+        #         batch = batch.to(device)
+        #
+        #         t = diffusion.sample_timesteps(batch.shape[0]).to(device)
+        #
+        #         x_t, noise = diffusion.noise_latents(batch, t)
+        #
+        #         predicted_noise = model(x_t, t, emotions)
+        #         val_loss = mse(noise, predicted_noise)
+        #         val_loss_sum += val_loss.item()
+        #
+        #         val_count += 1
+        #
+        #     mean_val_loss = val_loss_sum / val_count
+        #     val_losses.append(mean_val_loss)
+        #     logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
+        # model.train()
 
         # if mean_val_loss < min_val_loss:
         #     min_val_loss = mean_val_loss
@@ -400,7 +399,7 @@ def train():
         #
         if epoch % 30 == 0:
             sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -3., 3., std_devs_masks)
+            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
 
             generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
             file = open(generated_batch_abs_path, 'wb')
