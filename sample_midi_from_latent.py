@@ -10,7 +10,7 @@ import uuid
 
 current_dir = os.getcwd()
 
-file_to_sample_abs_path = "./188_epoch_batch.pkl"
+file_to_sample_abs_path = "./990_epoch_batch.pkl"
 sampled_latents = pickle.load(open(file_to_sample_abs_path, "rb"))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

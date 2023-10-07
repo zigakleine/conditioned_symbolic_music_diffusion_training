@@ -98,26 +98,25 @@ def setup_logging(run_name, current_dir):
 
 def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
-    # batch = (batch - data_min) / (data_max - data_min)
-    # batch = 2. * batch - 1.
-    # print("batch-mean-", batch.mean(axis=(0, 1)))
-
-    enc_tracks = np.split(batch, 4, axis=0)
-    enc_tracks_reduced = []
-    for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
-
-        enc_track_reduced = enc_track[:, std_dev_mask]
-        enc_tracks_reduced.append(enc_track_reduced)
-
-    enc_tracks_reduced = np.vstack(enc_tracks_reduced)
-
+    batch = (batch - data_min) / (data_max - data_min)
+    batch = 2. * batch - 1.
+    # # print("batch-mean-", batch.mean(axis=(0, 1)))
+    #
+    # enc_tracks = np.split(batch, 4, axis=0)
+    # enc_tracks_reduced = []
+    # for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
+    #
+    #     enc_track_reduced = enc_track[:, std_dev_mask]
+    #     enc_tracks_reduced.append(enc_track_reduced)
+    #
+    # enc_tracks_reduced = np.vstack(enc_tracks_reduced)
+    enc_tracks_reduced = batch
     return enc_tracks_reduced
 
 def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
 
-
-    # batch = (batch + 1.) / 2.
-    # batch = (data_max - data_min) * batch + data_min
+    batch = (batch + 1.) / 2.
+    batch = (data_max - data_min) * batch + data_min
     batch = batch.numpy()
     batch_ = []
     for enc_tracks in batch:

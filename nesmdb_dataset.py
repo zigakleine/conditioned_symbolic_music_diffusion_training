@@ -50,9 +50,9 @@ class NesmdbMidiDataset(Dataset):
         enc_seq = pickle.load(open(enc_seq_abs_path, "rb"))
         enc_seq = enc_seq[self.all_nesmdb_metadata[index]["index"]]
 
-        #
-        # if self.transform:
-        #     enc_seq = self.transform(enc_seq, -14., 14., self.std_dev_masks)
+
+        if self.transform:
+            enc_seq = self.transform(enc_seq, -14., 14., self.std_dev_masks)
 
         enc_seq_tracks = np.split(enc_seq, 4, axis=0)
         enc_seq_hstacked = np.hstack(enc_seq_tracks)
