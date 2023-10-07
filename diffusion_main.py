@@ -362,7 +362,7 @@ def train():
         logging.info(f"Validation for epoch {starting_epoch + epoch}:")
 
     file = open("./training_song.pkl", 'wb')
-    pickle.dump(torch.Tensor.cpu(batch).numpy(), file)
+    pickle.dump(inverse_data_transform(torch.Tensor.cpu(batch), -5., 5., std_devs_masks), file)
         # pbar_test = test_loader
         # pbar_test = tqdm(test_loader)
         # model.eval()
