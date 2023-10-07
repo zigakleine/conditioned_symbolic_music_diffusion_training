@@ -10,7 +10,7 @@ import uuid
 
 current_dir = os.getcwd()
 
-file_to_sample_abs_path = "./189_epoch_batch.pkl"
+file_to_sample_abs_path = "./188_epoch_batch.pkl"
 sampled_latents = pickle.load(open(file_to_sample_abs_path, "rb"))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,9 +32,9 @@ nesmdb_shared_library_path = os.path.join(current_dir, nesmdb_shared_library_rel
 db_proc = db_processing(nesmdb_shared_library_path, db_type)
 vae = singletrack_vae(model_path, batch_size)
 
-z = sampled_latents
+z = sampled_latents[0]
 
 song_data_ = vae.decode_sequence(z, total_steps, temperature)
 
 midi = db_proc.midi_from_song(song_data_)
-midi.save("./song_from_latent189.mid")
+midi.save("./song_from_latent188.mid")
