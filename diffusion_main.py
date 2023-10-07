@@ -361,8 +361,6 @@ def train():
         val_loss_sum = 0
         logging.info(f"Validation for epoch {starting_epoch + epoch}:")
 
-    file = open("./training_song.pkl", 'wb')
-    pickle.dump(inverse_data_transform(torch.Tensor.cpu(batch), -5., 5., std_devs_masks), file)
         # pbar_test = test_loader
         # pbar_test = tqdm(test_loader)
         # model.eval()
@@ -407,6 +405,8 @@ def train():
             file = open(generated_batch_abs_path, 'wb')
             pickle.dump(batch_transformed, file)
             file.close()
+    file = open("./training_song.pkl", 'wb')
+    pickle.dump(inverse_data_transform(torch.Tensor.cpu(batch), -5., 5., std_devs_masks), file)
 
         # checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
         #               "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
