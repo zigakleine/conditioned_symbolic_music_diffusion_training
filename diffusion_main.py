@@ -123,12 +123,12 @@ def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
     for enc_tracks in batch:
 
         enc_tracks_split = np.split(enc_tracks, 4, axis=1)
-
-        enc_tracks_reconstructed = []
-        for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
-            enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
-            enc_track_reconstructed[..., std_devs_mask] = enc_track
-            enc_tracks_reconstructed.append(enc_track_reconstructed)
+        enc_tracks_reconstructed = enc_tracks_split
+        # enc_tracks_reconstructed = []
+        # for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
+        #     enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
+        #     enc_track_reconstructed[..., std_devs_mask] = enc_track
+        #     enc_tracks_reconstructed.append(enc_track_reconstructed)
             # transformed = np.random.randn(*batch.shape[:-1], out_channels)
             # transformed[..., slices] = batch
             # batch = transformed
@@ -326,8 +326,8 @@ def train():
     for epoch in range(epochs):
 
         logging.info(f"Starting epoch {starting_epoch + epoch}:")
-        # pbar = tqdm(train_loader)
-        pbar = train_loader
+        pbar = tqdm(train_loader)
+        # pbar = train_loader
 
         train_count = 0
         train_loss_sum = 0
