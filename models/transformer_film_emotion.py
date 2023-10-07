@@ -20,9 +20,9 @@ class TransformerDDPME(nn.Module):
         self.embed_size = 2048
 
         self.num_heads = 8
-        self.num_layers = 9
+        self.num_layers = 2
 
-        self.num_mlp_layers = 3
+        self.num_mlp_layers = 2
         self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

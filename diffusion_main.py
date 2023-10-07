@@ -253,7 +253,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs = 1000
+    epochs = 3000
 
     run_info_params = {
         "run_name": run_name,
@@ -397,9 +397,9 @@ def train():
         #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
         #     torch.save(checkpoint, min_model_abs_path)
         #
-        if epoch % 30 == 0:
+        if epoch % 200 == 0:
             sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -2., 2., std_devs_masks)
+            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -3., 3., std_devs_masks)
 
             generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
             file = open(generated_batch_abs_path, 'wb')
@@ -425,29 +425,29 @@ def train():
 
         #  picklaj losse
 
-        train_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "train_losses.pkl")
-        file = open(train_losses_abs_path, 'wb')
-        pickle.dump(train_losses, file)
-        file.close()
-
-        val_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "val_losses.pkl")
-        file = open(val_losses_abs_path, 'wb')
-        pickle.dump(val_losses, file)
-        file.close()
-
-        # Plot validation losses in blue and training losses in red
-        epochs = range(len(val_losses))
-        plt.plot(epochs, val_losses, 'b', label='Validation Loss')
-        # plt.plot(epochs, train_losses, 'r', label='Training Loss')
-
-        # Add labels and a legend
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.title('Validation and Training Losses')
-        plt.legend()
-        loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
-        plt.savefig(loss_plot_abs_path)
-        plt.clf()
+        # train_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "train_losses.pkl")
+        # file = open(train_losses_abs_path, 'wb')
+        # pickle.dump(train_losses, file)
+        # file.close()
+        #
+        # val_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "val_losses.pkl")
+        # file = open(val_losses_abs_path, 'wb')
+        # pickle.dump(val_losses, file)
+        # file.close()
+        #
+        # # Plot validation losses in blue and training losses in red
+        # epochs = range(len(val_losses))
+        # plt.plot(epochs, val_losses, 'b', label='Validation Loss')
+        # # plt.plot(epochs, train_losses, 'r', label='Training Loss')
+        #
+        # # Add labels and a legend
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Loss')
+        # plt.title('Validation and Training Losses')
+        # plt.legend()
+        # loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
+        # plt.savefig(loss_plot_abs_path)
+        # plt.clf()
 
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
