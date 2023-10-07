@@ -399,13 +399,13 @@ def train():
                           "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
             torch.save(checkpoint, min_model_abs_path)
 
-        sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
-
-        generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
-        file = open(generated_batch_abs_path, 'wb')
-        pickle.dump(batch_transformed, file)
-        file.close()
+        # sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
+        # batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
+        #
+        # generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
+        # file = open(generated_batch_abs_path, 'wb')
+        # pickle.dump(batch_transformed, file)
+        # file.close()
 
         checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
                       "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
