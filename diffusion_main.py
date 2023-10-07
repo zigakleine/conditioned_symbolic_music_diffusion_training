@@ -189,7 +189,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 1e-3
-    batch_size = 1
+    batch_size = 5
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
@@ -204,7 +204,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.98)
     mse = nn.MSELoss()
 
     is_lakh = False
