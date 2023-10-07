@@ -187,7 +187,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 6e-4
+    lr = 1e-4
     batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -253,7 +253,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs = 3000
+    epochs = 2000
 
     run_info_params = {
         "run_name": run_name,
@@ -361,6 +361,8 @@ def train():
         val_loss_sum = 0
         logging.info(f"Validation for epoch {starting_epoch + epoch}:")
 
+    file = open("./training_song.pkl", 'wb')
+    pickle.dump(torch.Tensor.cpu(batch).numpy(), file)
         # pbar_test = test_loader
         # pbar_test = tqdm(test_loader)
         # model.eval()
