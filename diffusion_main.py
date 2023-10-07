@@ -204,7 +204,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.98)
     mse = nn.MSELoss()
 
     is_lakh = False
@@ -408,10 +408,10 @@ def train():
             pickle.dump(batch_transformed, file)
             file.close()
 
-        checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-                      "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-        min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
-        torch.save(checkpoint, min_model_abs_path)
+        # checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+        #               "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+        # min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
+        # torch.save(checkpoint, min_model_abs_path)
 
         if epoch == 99:
             checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
