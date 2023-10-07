@@ -52,7 +52,7 @@ class NesmdbMidiDataset(Dataset):
 
 
         if self.transform:
-            enc_seq = self.transform(enc_seq, -3., 3., self.std_dev_masks)
+            enc_seq = self.transform(enc_seq, -5., 5., self.std_dev_masks)
 
         enc_seq_tracks = np.split(enc_seq, 4, axis=0)
         enc_seq_hstacked = np.hstack(enc_seq_tracks)
