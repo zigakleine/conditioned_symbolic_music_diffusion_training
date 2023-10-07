@@ -98,8 +98,8 @@ def setup_logging(run_name, current_dir):
 
 def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
-    batch = (batch - data_min) / (data_max - data_min)
-    batch = 2. * batch - 1.
+    # batch = (batch - data_min) / (data_max - data_min)
+    # batch = 2. * batch - 1.
     # # print("batch-mean-", batch.mean(axis=(0, 1)))
     #
     # enc_tracks = np.split(batch, 4, axis=0)
@@ -115,8 +115,8 @@ def normalize_dataset(batch, data_min, data_max, std_dev_masks):
 
 def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
 
-    batch = (batch + 1.) / 2.
-    batch = (data_max - data_min) * batch + data_min
+    # batch = (batch + 1.) / 2.
+    # batch = (data_max - data_min) * batch + data_min
     batch = batch.numpy()
     batch_ = []
     for enc_tracks in batch:
@@ -187,7 +187,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1e-4
+    lr = 5e-3
     batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
