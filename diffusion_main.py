@@ -204,7 +204,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.98)
     mse = nn.MSELoss()
 
     is_lakh = False
@@ -254,7 +254,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs = 200
+    epochs = 400
 
     run_info_params = {
         "run_name": run_name,

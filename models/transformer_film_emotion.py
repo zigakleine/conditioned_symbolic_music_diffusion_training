@@ -201,8 +201,8 @@ class DenseResBlock(nn.Module):
         self.norm_1 = nn.LayerNorm(out_channels)
         self.norm_2 = nn.LayerNorm(out_channels)
 
-        # self.dropout_1 = nn.Dropout(dropout)
-        # self.dropout_2 = nn.Dropout(dropout)
+        self.dropout_1 = nn.Dropout(dropout)
+        self.dropout_2 = nn.Dropout(dropout)
 
         self.silu = nn.SiLU()
 
@@ -220,13 +220,13 @@ class DenseResBlock(nn.Module):
         x = scale * x + shift
         x = self.silu(x)
         x = self.linear_1(x)
-        # x = self.dropout_1(x)
+        x = self.dropout_1(x)
 
         x = self.norm_2(x)
         x = scale * x + shift
         x = self.silu(x)
         x = self.linear_2(x)
-        # x = self.dropout_2(x)
+        x = self.dropout_2(x)
 
         return x + shortcut
 
