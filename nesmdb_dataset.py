@@ -34,14 +34,12 @@ class NesmdbMidiDataset(Dataset):
                     emotion_q = categories_indices["emotions"][song["emotion_pred_same_vel"]]
                     song_rel_urls = song["encoded_song_urls"]
                     for song_rel_url in song_rel_urls:
-
-                        for i in range(song["num_sequences"]):
-                            if sequences_num >= 1:
-                                return
-                            else:
+                        if song_rel_url == "nesmdb_encoded/322_SuperMarioBros_/0*+0*p1-p2-tr-no.pkl":
+                            for i in range(song["num_sequences"]):
                                 sequence = {"url": song_rel_url, "index": i, "emotion": emotion_q}
                                 self.all_nesmdb_metadata.append(sequence)
                                 sequences_num += 1
+                                return
 
     def __getitem__(self, index):
         enc_seq_rel_path = self.all_nesmdb_metadata[index]["url"]
