@@ -36,7 +36,7 @@ class NesmdbMidiDataset(Dataset):
                     for song_rel_url in song_rel_urls:
 
                         for i in range(song["num_sequences"]):
-                            if sequences_num >= 10:
+                            if sequences_num >= 5:
                                 return
                             else:
                                 sequence = {"url": song_rel_url, "index": i, "emotion": emotion_q}

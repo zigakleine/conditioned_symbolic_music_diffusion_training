@@ -188,7 +188,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 6e-4
-    batch_size = 5
+    batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
@@ -302,7 +302,7 @@ def train():
     else:
         dataset = NesmdbMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
         # train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
-        train_ds, test_ds = torch.utils.data.random_split(dataset, [5, 5])
+        train_ds, test_ds = torch.utils.data.random_split(dataset, [1, 4])
 
     train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
