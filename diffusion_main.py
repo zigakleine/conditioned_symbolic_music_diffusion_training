@@ -253,7 +253,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs = 2000
+    epochs = 1000
 
     run_info_params = {
         "run_name": run_name,
