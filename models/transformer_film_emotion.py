@@ -20,7 +20,7 @@ class TransformerDDPME(nn.Module):
         self.embed_size = 2280
 
         self.num_heads = 12
-        self.num_layers = 6
+        self.num_layers = 3
 
         self.num_mlp_layers = 2
         self.mlp_dims = 2048
