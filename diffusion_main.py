@@ -438,7 +438,7 @@ def train():
         # Plot validation losses in blue and training losses in red
         epochs = range(len(val_losses))
         plt.plot(epochs, val_losses, 'b', label='Validation Loss')
-        plt.plot(epochs, train_losses, 'r', label='Training Loss')
+        # plt.plot(epochs, train_losses, 'r', label='Training Loss')
 
         # Add labels and a legend
         plt.xlabel('Epochs')
