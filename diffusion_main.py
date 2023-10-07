@@ -254,7 +254,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs = 400
+    epochs = 1000
 
     run_info_params = {
         "run_name": run_name,
@@ -391,39 +391,39 @@ def train():
             logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
         model.train()
 
-        if mean_val_loss < min_val_loss:
-            min_val_loss = mean_val_loss
-            logging.info(f"!!! New min validation loss at epoch {starting_epoch + epoch}, mean validation loss: {mean_val_loss}")
-            min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
-            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-            torch.save(checkpoint, min_model_abs_path)
-
-        if epoch % 10 == 0:
-            sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
-
-            generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
-            file = open(generated_batch_abs_path, 'wb')
-            pickle.dump(batch_transformed, file)
-            file.close()
+        # if mean_val_loss < min_val_loss:
+        #     min_val_loss = mean_val_loss
+        #     logging.info(f"!!! New min validation loss at epoch {starting_epoch + epoch}, mean validation loss: {mean_val_loss}")
+        #     min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
+        #     checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+        #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+        #     torch.save(checkpoint, min_model_abs_path)
+        #
+        # if epoch % 10 == 0:
+        #     sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
+        #     batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
+        #
+        #     generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
+        #     file = open(generated_batch_abs_path, 'wb')
+        #     pickle.dump(batch_transformed, file)
+        #     file.close()
 
         # checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
         #               "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
         # min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
         # torch.save(checkpoint, min_model_abs_path)
 
-        if epoch == 99:
-            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-            hund_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
-            torch.save(checkpoint, hund_model_abs_path)
-
-        if epoch == 149:
-            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-            hundten_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
-            torch.save(checkpoint, hundten_model_abs_path)
+        # if epoch == 99:
+        #     checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+        #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+        #     hund_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
+        #     torch.save(checkpoint, hund_model_abs_path)
+        #
+        # if epoch == 149:
+        #     checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+        #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+        #     hundten_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
+        #     torch.save(checkpoint, hundten_model_abs_path)
 
         #  picklaj losse
 
