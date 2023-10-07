@@ -26,7 +26,7 @@ class NesmdbMidiDataset(Dataset):
         nesmdb_metadata_abs_path = os.path.join(self.current_dir, self.metadata_folder, self.database_folder,
                                                 self.metadata_filename)
         metadata = pickle.load(open(nesmdb_metadata_abs_path, "rb"))
-
+        sequences_num = 0
         for game in metadata:
             for song in metadata[game]["songs"]:
                 if song["is_encodable"]:
@@ -34,9 +34,14 @@ class NesmdbMidiDataset(Dataset):
                     emotion_q = categories_indices["emotions"][song["emotion_pred_same_vel"]]
                     song_rel_urls = song["encoded_song_urls"]
                     for song_rel_url in song_rel_urls:
+
                         for i in range(song["num_sequences"]):
-                            sequence = {"url": song_rel_url, "index": i, "emotion": emotion_q}
-                            self.all_nesmdb_metadata.append(sequence)
+                            if sequences_num >= 10:
+                                return
+                            else:
+                                sequence = {"url": song_rel_url, "index": i, "emotion": emotion_q}
+                                self.all_nesmdb_metadata.append(sequence)
+                                sequences_num += 1
 
     def __getitem__(self, index):
         enc_seq_rel_path = self.all_nesmdb_metadata[index]["url"]
@@ -45,8 +50,9 @@ class NesmdbMidiDataset(Dataset):
         enc_seq = pickle.load(open(enc_seq_abs_path, "rb"))
         enc_seq = enc_seq[self.all_nesmdb_metadata[index]["index"]]
 
-        if self.transform:
-            enc_seq = self.transform(enc_seq, -14., 14., self.std_dev_masks)
+        #
+        # if self.transform:
+        #     enc_seq = self.transform(enc_seq, -14., 14., self.std_dev_masks)
 
         enc_seq_tracks = np.split(enc_seq, 4, axis=0)
         enc_seq_hstacked = np.hstack(enc_seq_tracks)

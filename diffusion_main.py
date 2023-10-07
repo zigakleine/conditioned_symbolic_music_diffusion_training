@@ -189,7 +189,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 2e-4
-    batch_size = 512
+    batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
@@ -203,7 +203,8 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000, gamma=0.98)
     mse = nn.MSELoss()
 
     is_lakh = False
@@ -215,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_0710_s1"
+        run_name = "ddpm_nesmdb_0710__overfittest"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -298,9 +299,11 @@ def train():
     if is_lakh:
         dataset = LakhMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [272702, 8434])
+
     else:
         dataset = NesmdbMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
-        train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
+        # train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
+        train_ds, test_ds = torch.utils.data.random_split(dataset, [5, 5])
 
     train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True )
@@ -323,8 +326,8 @@ def train():
     for epoch in range(epochs):
 
         logging.info(f"Starting epoch {starting_epoch + epoch}:")
-        pbar = tqdm(train_loader)
-        # pbar = train_loader
+        # pbar = tqdm(train_loader)
+        pbar = train_loader
 
         train_count = 0
         train_loss_sum = 0
