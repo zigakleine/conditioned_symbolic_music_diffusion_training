@@ -38,6 +38,7 @@ class NesmdbMidiDataset(Dataset):
                             for i in range(song["num_sequences"]):
                                 sequence = {"url": song_rel_url, "index": i, "emotion": emotion_q}
                                 self.all_nesmdb_metadata.append(sequence)
+                                print(i)
                                 sequences_num += 1
                                 return
 
@@ -50,7 +51,7 @@ class NesmdbMidiDataset(Dataset):
 
 
         if self.transform:
-            enc_seq = self.transform(enc_seq, -5., 5., self.std_dev_masks)
+            enc_seq = self.transform(enc_seq, -14., 14., self.std_dev_masks)
 
         enc_seq_tracks = np.split(enc_seq, 4, axis=0)
         enc_seq_hstacked = np.hstack(enc_seq_tracks)

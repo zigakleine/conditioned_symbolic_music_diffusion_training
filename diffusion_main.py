@@ -187,7 +187,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 2e-3
+    lr = 1e-4
     batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -399,14 +399,14 @@ def train():
         #
         if epoch % 200 == 0:
             sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -5., 5., std_devs_masks)
+            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
 
             generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
             file = open(generated_batch_abs_path, 'wb')
             pickle.dump(batch_transformed, file)
             file.close()
     file = open("./training_song.pkl", 'wb')
-    pickle.dump(inverse_data_transform(torch.Tensor.cpu(batch), -5., 5., std_devs_masks), file)
+    pickle.dump(inverse_data_transform(torch.Tensor.cpu(batch), -14., 14., std_devs_masks), file)
 
         # checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
         #               "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}

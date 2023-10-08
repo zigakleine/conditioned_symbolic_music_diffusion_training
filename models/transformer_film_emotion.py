@@ -82,7 +82,7 @@ class TransformerDDPME(nn.Module):
 class EncoderLayer(nn.Module):
 
 
-    def __init__(self, embed_size, num_heads, dropout=0.1):
+    def __init__(self, embed_size, num_heads, dropout=0.0):
 
         super(EncoderLayer, self).__init__()
 
