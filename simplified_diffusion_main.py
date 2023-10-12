@@ -24,7 +24,7 @@ lr = 6e-4
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-run_name = "img_overfit_test"
+run_name = "img_overfit_test2"
 
 categories = {"emotions": 4}
 model = TransformerDDPME(categories).to(device)
