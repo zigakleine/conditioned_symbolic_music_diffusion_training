@@ -61,12 +61,12 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
-lr = 6e-4
+lr = 2e-4
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-training_data_type = "song"
-run_name = "img_overfit_test_song_1"
+training_data_type = "img"
+run_name = "img_overfit_test_img_1"
 
 categories = {"emotions": 4}
 
@@ -92,6 +92,7 @@ current_dir = os.getcwd()
 # to_save_dir = "/storage/local/ssd/zigakleine-workspace"
 to_save_dir = os.getcwd()
 
+imgs_generated = []
 
 
 if training_data_type == "img":
@@ -157,7 +158,7 @@ for epoch in range(epochs_num):
     plt.savefig(loss_plot_abs_path)
     plt.clf()
 
-    if epoch % 100 == 0:
+    if epoch % 1000 == 0:
 
         sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
 
@@ -167,6 +168,7 @@ for epoch in range(epochs_num):
 
             sampled_latents = torch.Tensor.cpu(sampled_latents).numpy()
             sampled_latents = sampled_latents.squeeze(0)
+            imgs_generated.append(sampled_latents)
             im = Image.fromarray(sampled_latents)
             generated_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"ep_{epoch}.jpg")
             im.save(generated_abs_path)
@@ -178,3 +180,9 @@ for epoch in range(epochs_num):
             file = open(generated_batch_abs_path, 'wb')
             pickle.dump(batch_transformed, file)
             file.close()
+
+
+if training_data_type == "img:":
+    imgall = Image.fromarray(np.hstack(imgs_generated))
+    generated_all_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"all.jpg")
+    imgall.save(generated_all_abs_path)
