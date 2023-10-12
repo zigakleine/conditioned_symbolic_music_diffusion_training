@@ -29,7 +29,7 @@ run_name = "img_overfit_test"
 categories = {"emotions": 4}
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.98)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.98)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
