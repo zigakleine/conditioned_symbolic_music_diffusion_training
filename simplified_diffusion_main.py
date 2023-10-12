@@ -65,8 +65,9 @@ lr = 2e-4
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-training_data_type = "song"
-run_name = "song_overfit_test_1"
+training_data_type = "img"
+# run_name = "song_overfit_test_1"
+run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
 
@@ -162,7 +163,7 @@ for epoch in range(epochs_num):
 
         sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
 
-        if training_data_type == "img:":
+        if training_data_type == "img":
             sampled_latents = (sampled_latents.clamp(-1, 1) + 1) / 2
             sampled_latents = (sampled_latents * 255).type(torch.uint8)
 
@@ -182,7 +183,7 @@ for epoch in range(epochs_num):
             file.close()
 
 
-if training_data_type == "img:":
+if training_data_type == "img":
     imgall = Image.fromarray(np.hstack(imgs_generated))
     generated_all_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"all.jpg")
     imgall.save(generated_all_abs_path)
