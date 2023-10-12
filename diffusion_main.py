@@ -203,7 +203,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.98)
+ 
     mse = nn.MSELoss()
 
     is_lakh = False
