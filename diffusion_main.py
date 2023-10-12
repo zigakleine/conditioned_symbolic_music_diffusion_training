@@ -253,7 +253,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs = 1000
+    epochs_num = 1000
 
     run_info_params = {
         "run_name": run_name,
@@ -322,7 +322,7 @@ def train():
         starting_epoch = 0
         min_val_loss = min_val_loss_start
 
-    for epoch in range(epochs):
+    for epoch in range(epochs_num):
 
         logging.info(f"Starting epoch {starting_epoch + epoch}:")
         pbar = tqdm(train_loader)
