@@ -14,9 +14,8 @@ from PIL import Image
 
 
 def setup_logging(run_name, current_dir):
-    os.makedirs(os.path.join(current_dir, "checkpoints"), exist_ok=True)
+
     os.makedirs(os.path.join(current_dir, "results"), exist_ok=True)
-    os.makedirs(os.path.join(current_dir, "checkpoints", run_name), exist_ok=True)
     os.makedirs(os.path.join(current_dir, "results", run_name), exist_ok=True)
     os.makedirs(os.path.join(current_dir, "results", run_name, "generated"), exist_ok=True)
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
@@ -30,7 +29,7 @@ run_name = "img_overfit_test"
 categories = {"emotions": 4}
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.98)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.98)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
@@ -50,7 +49,12 @@ image = Image.open('./img.jpg')
 
 # Convert the image to a NumPy array
 image = image.convert('L')
-imgarr = np.array(np.array(image)/256, dtype=np.float32)
+imgarr = np.array(np.array(image)/255, dtype=np.float32)
+
+imgarr_out = np.array(imgarr * 255, dtype=np.uint8)
+im_out = Image.fromarray(imgarr_out)
+im_out.save("img_gray.jpg")
+
 imgarr = imgarr[None, :, :]
 imgarr_n = F.normalize(torch.tensor(imgarr), (0.5,), (0.5,), False)
 

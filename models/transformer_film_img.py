@@ -23,7 +23,7 @@ class TransformerDDPME(nn.Module):
         self.num_layers = 6
 
         self.num_mlp_layers = 3
-        self.mlp_dims = 512
+        self.mlp_dims = 1024
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.token_embedding = nn.Linear(self.vocab_size, self.embed_size)
@@ -236,8 +236,8 @@ def count_parameters(model):
 if __name__ == "__main__":
     # pass
     categories = {'emotions': 4}
-    seq_len = 16
-    vocab_size = 2048
+    seq_len = 128
+    vocab_size = 256
     num_timesteps = 1000
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
