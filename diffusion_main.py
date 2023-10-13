@@ -327,8 +327,8 @@ def train():
     for epoch in range(epochs_num):
 
         logging.info(f"Starting epoch {starting_epoch + epoch}:")
-        # pbar = tqdm(train_loader)
-        pbar = train_loader
+        pbar = tqdm(train_loader)
+        # pbar = train_loader
 
         train_count = 0
         train_loss_sum = 0
