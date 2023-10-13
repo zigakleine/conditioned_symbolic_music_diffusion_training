@@ -61,7 +61,7 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
-lr = 1e-4
+lr = 3e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
