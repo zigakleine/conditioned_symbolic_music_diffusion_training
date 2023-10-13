@@ -17,13 +17,15 @@ class TransformerDDPME(nn.Module):
 
         self.num_timesteps = 1000
 
-        self.embed_size = 2560
+        # self.embed_size = 2560
+        self.embed_size = 2048
 
-        self.num_heads = 16
-        self.num_layers = 5
+        self.num_heads = 8
+        self.num_layers = 8
 
-        self.num_mlp_layers = 2
-        self.mlp_dims = 2560
+        self.num_mlp_layers = 3
+        # self.mlp_dims = 2560
+        self.mlp_dims = 2048
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.token_embedding = nn.Linear(self.vocab_size, self.embed_size)
