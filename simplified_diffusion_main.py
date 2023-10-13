@@ -61,12 +61,12 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
-lr = 2e-5
+lr = 1.85e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 training_data_type = "song"
-run_name = "song_overfit_test_1"
+run_name = "song_overfit_test_2"
 # run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
@@ -78,7 +78,7 @@ elif training_data_type == "song":
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.98)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.98)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
@@ -86,7 +86,7 @@ setup_logging(run_name, current_dir)
 diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vocab_size=model.vocab_size,
                       time_steps=model.seq_len)
 
-epochs_num = 25000
+epochs_num = 20000
 train_losses = []
 
 current_dir = os.getcwd()
