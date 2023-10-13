@@ -203,7 +203,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5*(100127//batch_size), gamma=0.98)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5000//batch_size, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7000//batch_size, gamma=0.98)
 
     mse = nn.MSELoss()
 
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1310_overfittest_256"
+        run_name = "ddpm_nesmdb_1310_overfittest_5120"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
