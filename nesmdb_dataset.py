@@ -18,8 +18,8 @@ class NesmdbMidiDataset(Dataset):
         self.metadata_folder = "db_metadata"
         self.database_folder = "nesmdb"
         self.current_dir = os.getcwd()
-        self.encoded_dir = "/storage/local/ssd/zigakleine-workspace"
-        # self.encoded_dir = os.getcwd()
+        # self.encoded_dir = "/storage/local/ssd/zigakleine-workspace"
+        self.encoded_dir = os.getcwd()
         self.all_nesmdb_metadata = []
         self.metadata_filename = "nesmdb_updated2808.pkl"
         self.std_dev_masks = std_dev_masks

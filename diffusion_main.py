@@ -187,11 +187,11 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1.77e-5
+    lr = 1.81e-5
     batch_size = 1
     current_dir = os.getcwd()
-    to_save_dir = "/storage/local/ssd/zigakleine-workspace"
-    # to_save_dir = os.getcwd()
+    # to_save_dir = "/storage/local/ssd/zigakleine-workspace"
+    to_save_dir = os.getcwd()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -202,7 +202,8 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5*(100127//batch_size), gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.98)
 
     mse = nn.MSELoss()
 
@@ -325,15 +326,16 @@ def train():
     for epoch in range(epochs_num):
 
         logging.info(f"Starting epoch {starting_epoch + epoch}:")
-        pbar = tqdm(train_loader)
-        # pbar = train_loader
+        # pbar = tqdm(train_loader)
+        pbar = train_loader
 
         train_count = 0
         train_loss_sum = 0
 
         for step, (batch, l) in enumerate(pbar):
 
-            emotions = choose_labels_emotion(l, is_lakh)
+            # emotions = choose_labels_emotion(l, is_lakh)
+            emotions = None
             if emotions is not None:
                 emotions = emotions.to(device)
             batch = batch.to(device)
@@ -397,7 +399,7 @@ def train():
         #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
         #     torch.save(checkpoint, min_model_abs_path)
         #
-        if epoch % 200 == 0:
+        if epoch % 1000 == 0:
             sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
             batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
 
@@ -405,8 +407,6 @@ def train():
             file = open(generated_batch_abs_path, 'wb')
             pickle.dump(batch_transformed, file)
             file.close()
-    file = open("./training_song.pkl", 'wb')
-    pickle.dump(inverse_data_transform(torch.Tensor.cpu(batch), -14., 14., std_devs_masks), file)
 
         # checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
         #               "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
@@ -437,19 +437,21 @@ def train():
         # pickle.dump(val_losses, file)
         # file.close()
         #
-        # # Plot validation losses in blue and training losses in red
-        # epochs = range(len(val_losses))
-        # plt.plot(epochs, val_losses, 'b', label='Validation Loss')
-        # # plt.plot(epochs, train_losses, 'r', label='Training Loss')
-        #
-        # # Add labels and a legend
-        # plt.xlabel('Epochs')
-        # plt.ylabel('Loss')
-        # plt.title('Validation and Training Losses')
-        # plt.legend()
-        # loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
-        # plt.savefig(loss_plot_abs_path)
-        # plt.clf()
+
+        if epoch % 1000 == 0:
+        # Plot validation losses in blue and training losses in red
+            epochs = range(len(val_losses))
+            # plt.plot(epochs, val_losses, 'b', label='Validation Loss')
+            plt.plot(epochs, train_losses, 'r', label='Training Loss')
+
+            # Add labels and a legend
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss')
+            plt.title('Validation and Training Losses')
+            plt.legend()
+            loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
+            plt.savefig(loss_plot_abs_path)
+            plt.clf()
 
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
