@@ -187,7 +187,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    lr = 1e-4
+    lr = 1.77e-5
     batch_size = 1
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -202,8 +202,8 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
- 
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=4000//(batch_size//64), gamma=0.98)
+
     mse = nn.MSELoss()
 
     is_lakh = False
@@ -253,7 +253,7 @@ def train():
     print("starting from lakh", start_from_pretrained_model)
 
 
-    epochs_num = 1000
+    epochs_num = 20000
 
     run_info_params = {
         "run_name": run_name,
