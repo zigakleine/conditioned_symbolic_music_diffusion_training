@@ -61,10 +61,10 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
-dmin = -5.
-dmax = 5.
+dmin = -14.
+dmax = 14.
 epochs_num = 30000
-lr = 8e-4
+lr = 1.81e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -81,7 +81,7 @@ elif training_data_type == "song":
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.97)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.97)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
