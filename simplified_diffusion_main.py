@@ -61,7 +61,7 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
-lr = 2e-4
+lr = 1e-4
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -78,7 +78,7 @@ elif training_data_type == "song":
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.98)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=300, gamma=0.98)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
@@ -86,7 +86,7 @@ setup_logging(run_name, current_dir)
 diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vocab_size=model.vocab_size,
                       time_steps=model.seq_len)
 
-epochs_num = 14000
+epochs_num = 25000
 train_losses = []
 
 current_dir = os.getcwd()
@@ -148,16 +148,17 @@ for epoch in range(epochs_num):
     logging.info(f"Learning rate at epoch  epoch:{current_lr}")
     logging.info(f"Epoch {epoch} mean training loss: {train_loss}")
 
-    epochs = range(len(train_losses))
-    plt.plot(epochs, train_losses, 'r', label='Training Loss')
-    # Add labels and a legend
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.title('Validation and Training Losses')
-    plt.legend()
-    loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{epoch}.png")
-    plt.savefig(loss_plot_abs_path)
-    plt.clf()
+    if epoch % 1000 == 0:
+        epochs = range(len(train_losses))
+        plt.plot(epochs, train_losses, 'r', label='Training Loss')
+        # Add labels and a legend
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Validation and Training Losses')
+        plt.legend()
+        loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{epoch}.png")
+        plt.savefig(loss_plot_abs_path)
+        plt.clf()
 
     if epoch % 1000 == 0:
 
