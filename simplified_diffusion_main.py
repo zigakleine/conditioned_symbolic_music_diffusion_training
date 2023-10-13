@@ -86,7 +86,7 @@ setup_logging(run_name, current_dir)
 diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vocab_size=model.vocab_size,
                       time_steps=model.seq_len)
 
-epochs_num = 8000
+epochs_num = 14000
 train_losses = []
 
 current_dir = os.getcwd()
