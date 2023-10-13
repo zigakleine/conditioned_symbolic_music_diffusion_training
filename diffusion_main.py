@@ -440,7 +440,7 @@ def train():
 
         if epoch % 1000 == 0:
         # Plot validation losses in blue and training losses in red
-            epochs = range(len(val_losses))
+            epochs = range(len(train_losses))
             # plt.plot(epochs, val_losses, 'b', label='Validation Loss')
             plt.plot(epochs, train_losses, 'r', label='Training Loss')
 
