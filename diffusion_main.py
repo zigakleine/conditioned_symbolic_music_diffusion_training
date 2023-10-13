@@ -188,7 +188,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 1.81e-5
-    batch_size = 400
+    batch_size = 256
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1310_overfittest_400"
+        run_name = "ddpm_nesmdb_1310_overfittest_256"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
