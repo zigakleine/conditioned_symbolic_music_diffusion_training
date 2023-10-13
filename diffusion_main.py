@@ -188,7 +188,7 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     lr = 1.81e-5
-    batch_size = 1
+    batch_size = 10
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
@@ -305,6 +305,7 @@ def train():
         # train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
         # train_ds, test_ds = torch.utils.data.random_split(dataset, [1, 4])
 
+    print("dataset_len-", dataset.__len__())
     train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
     # test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
 

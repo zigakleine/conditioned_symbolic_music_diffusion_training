@@ -61,13 +61,15 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
+dmin = -10.
+dmax = 10.
 epochs_num = 5000
 lr = 1.81e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 training_data_type = "song"
-run_name = "song_overfit_test_7"
+run_name = "song_overfit_test_8"
 # run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
@@ -91,8 +93,8 @@ diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vo
 train_losses = []
 
 current_dir = os.getcwd()
-to_save_dir = "/storage/local/ssd/zigakleine-workspace"
-# to_save_dir = os.getcwd()
+# to_save_dir = "/storage/local/ssd/zigakleine-workspace"
+to_save_dir = os.getcwd()
 
 imgs_generated = []
 
@@ -116,7 +118,7 @@ elif training_data_type == "song":
     song_hstacked = np.hstack(song_split)
 
     song = song_hstacked[None, :, :]
-    song = normalize_dataset(torch.tensor(song), -14., 14., None)
+    song = normalize_dataset(torch.tensor(song), dmin, dmax, None)
 
 for epoch in range(epochs_num):
 
@@ -178,7 +180,7 @@ for epoch in range(epochs_num):
 
         elif training_data_type == "song":
 
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., None)
+            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), dmin, dmax, None)
             generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{epoch}_epoch_batch.pkl")
             file = open(generated_batch_abs_path, 'wb')
             pickle.dump(batch_transformed, file)

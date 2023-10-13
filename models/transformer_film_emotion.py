@@ -83,7 +83,7 @@ class TransformerDDPME(nn.Module):
 class EncoderLayer(nn.Module):
 
 
-    def __init__(self, embed_size, num_heads, dropout=0.1):
+    def __init__(self, embed_size, num_heads, dropout=0.):
 
         super(EncoderLayer, self).__init__()
 
@@ -193,7 +193,7 @@ class DenseFiLM(nn.Module):
 
 class DenseResBlock(nn.Module):
 
-    def __init__(self, out_channels, dropout=0.1):
+    def __init__(self, out_channels, dropout=0.):
         super(DenseResBlock, self).__init__()
 
         self.linear_1 = nn.Linear(out_channels, out_channels)
