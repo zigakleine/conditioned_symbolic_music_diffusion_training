@@ -190,8 +190,8 @@ def train():
     lr = 1.81e-5
     batch_size = 1
     current_dir = os.getcwd()
-    # to_save_dir = "/storage/local/ssd/zigakleine-workspace"
-    to_save_dir = os.getcwd()
+    to_save_dir = "/storage/local/ssd/zigakleine-workspace"
+    # to_save_dir = os.getcwd()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_0710__overfittest"
+        run_name = "ddpm_nesmdb_1310_overfittest"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
