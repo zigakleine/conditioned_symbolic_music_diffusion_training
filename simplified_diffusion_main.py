@@ -61,15 +61,15 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
-dmin = -10.
-dmax = 10.
+dmin = -5.
+dmax = 5.
 epochs_num = 5000
 lr = 1.81e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 training_data_type = "song"
-run_name = "song_overfit_test_8"
+run_name = "song_overfit_test_9"
 # run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
