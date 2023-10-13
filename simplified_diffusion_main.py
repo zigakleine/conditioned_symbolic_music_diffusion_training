@@ -62,7 +62,7 @@ def setup_logging(run_name, current_dir):
 
 
 epochs_num = 5000
-lr = 1.81e-5
+lr = 1.77e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
