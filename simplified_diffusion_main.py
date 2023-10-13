@@ -61,12 +61,13 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
 
+epochs_num = 5000
 lr = 1.81e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 training_data_type = "song"
-run_name = "song_overfit_test_3"
+run_name = "song_overfit_test_4"
 # run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
@@ -86,7 +87,7 @@ setup_logging(run_name, current_dir)
 diffusion = Diffusion(noise_steps=model.num_timesteps, batch_size=batch_size, vocab_size=model.vocab_size,
                       time_steps=model.seq_len)
 
-epochs_num = 20000
+
 train_losses = []
 
 current_dir = os.getcwd()
