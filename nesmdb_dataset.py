@@ -37,12 +37,9 @@ class NesmdbMidiDataset(Dataset):
                         # if song_rel_url == "nesmdb_encoded/322_SuperMarioBros_/0*+0*p1-p2-tr-no.pkl":
 
                         for i in range(song["num_sequences"]):
-                            if sequences_num >= 20480:
-                                return
 
                             sequence = {"url": song_rel_url, "index": i, "emotion": emotion_q}
                             self.all_nesmdb_metadata.append(sequence)
-                            # print(i)
                             sequences_num += 1
 
 

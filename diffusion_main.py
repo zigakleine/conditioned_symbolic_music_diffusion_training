@@ -187,6 +187,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
+    epochs_num = 300
     lr = 1.81e-5
     batch_size = 256
     current_dir = os.getcwd()
@@ -202,8 +203,7 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5*(100127//batch_size), gamma=0.98)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=24000//batch_size, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
 
     mse = nn.MSELoss()
 
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1310_overfittest_20ke"
+        run_name = "ddpm_nesmdb_1410"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -252,9 +252,6 @@ def train():
     print("dataset is", run_name)
     print("continue_training", continue_training)
     print("starting from lakh", start_from_pretrained_model)
-
-
-    epochs_num = 20000
 
     run_info_params = {
         "run_name": run_name,
@@ -302,12 +299,11 @@ def train():
 
     else:
         dataset = NesmdbMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
-        # train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
-        # train_ds, test_ds = torch.utils.data.random_split(dataset, [1, 4])
+        train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
 
     print("dataset_len-", dataset.__len__())
-    train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
-    # test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(dataset=train_ds, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(dataset=test_ds, batch_size=batch_size, shuffle=True)
 
     if continue_training:
         train_losses_abs_path = os.path.join(to_save_dir, "results", existing_model_run_name, "train_losses.pkl")
@@ -364,94 +360,92 @@ def train():
         logging.info(f"Validation for epoch {starting_epoch + epoch}:")
 
         # pbar_test = test_loader
-        # pbar_test = tqdm(test_loader)
-        # model.eval()
-        # with torch.no_grad():
-        #
-        #     for step, (batch, l) in enumerate(pbar_test):
-        #
-        #         emotions = choose_labels_emotion(l, is_lakh)
-        #
-        #         if emotions is not None:
-        #             emotions = emotions.to(device)
-        #         batch = batch.to(device)
-        #
-        #         t = diffusion.sample_timesteps(batch.shape[0]).to(device)
-        #
-        #         x_t, noise = diffusion.noise_latents(batch, t)
-        #
-        #         predicted_noise = model(x_t, t, emotions)
-        #         val_loss = mse(noise, predicted_noise)
-        #         val_loss_sum += val_loss.item()
-        #
-        #         val_count += 1
-        #
-        #     mean_val_loss = val_loss_sum / val_count
-        #     val_losses.append(mean_val_loss)
-        #     logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
-        # model.train()
+        pbar_test = tqdm(test_loader)
+        model.eval()
+        with torch.no_grad():
 
-        # if mean_val_loss < min_val_loss:
-        #     min_val_loss = mean_val_loss
-        #     logging.info(f"!!! New min validation loss at epoch {starting_epoch + epoch}, mean validation loss: {mean_val_loss}")
-        #     min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
-        #     checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-        #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-        #     torch.save(checkpoint, min_model_abs_path)
-        #
-        if epoch % 1000 == 0:
-            sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
+            for step, (batch, l) in enumerate(pbar_test):
 
-            generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
-            file = open(generated_batch_abs_path, 'wb')
-            pickle.dump(batch_transformed, file)
-            file.close()
+                emotions = choose_labels_emotion(l, is_lakh)
 
-        # checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-        #               "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-        # min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
-        # torch.save(checkpoint, min_model_abs_path)
+                if emotions is not None:
+                    emotions = emotions.to(device)
+                batch = batch.to(device)
 
-        # if epoch == 99:
-        #     checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-        #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-        #     hund_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "100_checkpoint.pth.tar")
-        #     torch.save(checkpoint, hund_model_abs_path)
-        #
-        # if epoch == 149:
-        #     checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
-        #                   "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
-        #     hundten_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
-        #     torch.save(checkpoint, hundten_model_abs_path)
+                t = diffusion.sample_timesteps(batch.shape[0]).to(device)
+
+                x_t, noise = diffusion.noise_latents(batch, t)
+
+                predicted_noise = model(x_t, t, emotions)
+                val_loss = mse(noise, predicted_noise)
+                val_loss_sum += val_loss.item()
+
+                val_count += 1
+
+            mean_val_loss = val_loss_sum / val_count
+            val_losses.append(mean_val_loss)
+            logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
+        model.train()
+
+        if mean_val_loss < min_val_loss:
+            min_val_loss = mean_val_loss
+            logging.info(f"!!! New min validation loss at epoch {starting_epoch + epoch}, mean validation loss: {mean_val_loss}")
+            min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "min_checkpoint.pth.tar")
+            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+            torch.save(checkpoint, min_model_abs_path)
+
+        sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
+        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
+
+        generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
+        file = open(generated_batch_abs_path, 'wb')
+        pickle.dump(batch_transformed, file)
+        file.close()
+
+        checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                      "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+        min_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "last_checkpoint.pth.tar")
+        torch.save(checkpoint, min_model_abs_path)
+
+        if epoch == 199:
+            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+            twoh_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "200_checkpoint.pth.tar")
+            torch.save(checkpoint, twoh_model_abs_path)
+
+        if epoch == 299:
+            checkpoint = {"state_dict": model.state_dict(), "optimizer": optimizer.state_dict(),
+                          "epoch": (starting_epoch + epoch), "min_val_loss": min_val_loss}
+            threeh_model_abs_path = os.path.join(to_save_dir, "checkpoints", run_name, "150_checkpoint.pth.tar")
+            torch.save(checkpoint, threeh_model_abs_path)
 
         #  picklaj losse
 
-        # train_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "train_losses.pkl")
-        # file = open(train_losses_abs_path, 'wb')
-        # pickle.dump(train_losses, file)
-        # file.close()
-        #
-        # val_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "val_losses.pkl")
-        # file = open(val_losses_abs_path, 'wb')
-        # pickle.dump(val_losses, file)
-        # file.close()
-        #
+        train_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "train_losses.pkl")
+        file = open(train_losses_abs_path, 'wb')
+        pickle.dump(train_losses, file)
+        file.close()
 
-        if epoch % 1000 == 0:
+        val_losses_abs_path = os.path.join(to_save_dir, "results", run_name, "val_losses.pkl")
+        file = open(val_losses_abs_path, 'wb')
+        pickle.dump(val_losses, file)
+        file.close()
+
+
         # Plot validation losses in blue and training losses in red
-            epochs = range(len(train_losses))
-            # plt.plot(epochs, val_losses, 'b', label='Validation Loss')
-            plt.plot(epochs, train_losses, 'r', label='Training Loss')
+        epochs = range(len(train_losses))
+        plt.plot(epochs, val_losses, 'b', label='Validation Loss')
+        plt.plot(epochs, train_losses, 'r', label='Training Loss')
 
-            # Add labels and a legend
-            plt.xlabel('Epochs')
-            plt.ylabel('Loss')
-            plt.title('Validation and Training Losses')
-            plt.legend()
-            loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch+epoch}.png")
-            plt.savefig(loss_plot_abs_path)
-            plt.clf()
+        # Add labels and a legend
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.title('Validation and Training Losses')
+        plt.legend()
+        loss_plot_abs_path = os.path.join(to_save_dir, "results", run_name, "graphs", f"loss_plot_{starting_epoch + epoch}.png")
+        plt.savefig(loss_plot_abs_path)
+        plt.clf()
 
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
