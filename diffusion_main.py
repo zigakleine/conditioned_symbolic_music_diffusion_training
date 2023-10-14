@@ -98,8 +98,8 @@ def setup_logging(run_name, current_dir):
 
 def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
-    batch = (batch - data_min) / (data_max - data_min)
-    batch = 2. * batch - 1.
+    # batch = (batch - data_min) / (data_max - data_min)
+    # batch = 2. * batch - 1.
     # # print("batch-mean-", batch.mean(axis=(0, 1)))
     #
     # enc_tracks = np.split(batch, 4, axis=0)
@@ -115,8 +115,8 @@ def normalize_dataset(batch, data_min, data_max, std_dev_masks):
 
 def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
 
-    batch = (batch + 1.) / 2.
-    batch = (data_max - data_min) * batch + data_min
+    # batch = (batch + 1.) / 2.
+    # batch = (data_max - data_min) * batch + data_min
     batch = batch.numpy()
     batch_ = []
     for enc_tracks in batch:
@@ -187,7 +187,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    epochs_num = 300 
+    epochs_num = 300
     lr = 1.81e-5
     batch_size = 256
     current_dir = os.getcwd()
@@ -203,7 +203,7 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=500, gamma=0.98)
 
     mse = nn.MSELoss()
 
@@ -216,7 +216,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1410"
+        run_name = "ddpm_nesmdb_1410_2"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
