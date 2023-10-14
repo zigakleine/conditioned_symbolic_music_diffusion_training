@@ -98,8 +98,8 @@ def setup_logging(run_name, current_dir):
 
 def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
-    # batch = (batch - data_min) / (data_max - data_min)
-    # batch = 2. * batch - 1.
+    batch = (batch - data_min) / (data_max - data_min)
+    batch = 2. * batch - 1.
     # # print("batch-mean-", batch.mean(axis=(0, 1)))
     #
     # enc_tracks = np.split(batch, 4, axis=0)
@@ -115,8 +115,8 @@ def normalize_dataset(batch, data_min, data_max, std_dev_masks):
 
 def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
 
-    # batch = (batch + 1.) / 2.
-    # batch = (data_max - data_min) * batch + data_min
+    batch = (batch + 1.) / 2.
+    batch = (data_max - data_min) * batch + data_min
     batch = batch.numpy()
     batch_ = []
     for enc_tracks in batch:
@@ -176,7 +176,6 @@ def choose_labels_emotion(l, is_lakh):
 
 def train():
 
-
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
     print("started training at:", formatted)
@@ -203,7 +202,7 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1000, gamma=0.98)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
 
     mse = nn.MSELoss()
 
@@ -216,7 +215,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1410_2"
+        run_name = "ddpm_nesmdb_1410_3"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -396,7 +395,7 @@ def train():
             torch.save(checkpoint, min_model_abs_path)
 
         sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -14., 14., std_devs_masks)
+        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -3., 3., std_devs_masks)
 
         generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
         file = open(generated_batch_abs_path, 'wb')
