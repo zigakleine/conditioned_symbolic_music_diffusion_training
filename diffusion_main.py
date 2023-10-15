@@ -31,9 +31,9 @@ class Diffusion:
         self.beta_start = beta_start
         self.beta_end = beta_end
 
-        # self.batch_size = batch_size
-        # self.vocab_size = vocab_size
-        # self.time_steps = time_steps
+        self.batch_size = batch_size
+        self.vocab_size = vocab_size
+        self.time_steps = time_steps
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
