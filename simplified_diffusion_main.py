@@ -69,7 +69,7 @@ batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 training_data_type = "song"
-run_name = "song_overfit_test_13"
+run_name = "song_overfit_test_14"
 # run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
@@ -82,8 +82,8 @@ elif training_data_type == "song":
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
 # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.98)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=900)
-mse = nn.MSELoss()
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=750)
+mse = nn.L1Loss()
 
 setup_logging(run_name, current_dir)
 
