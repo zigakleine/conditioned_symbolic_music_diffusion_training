@@ -63,8 +63,8 @@ def setup_logging(run_name, current_dir):
 
 dmin = -3.
 dmax = 3.
-epochs_num = 5000
-lr = 5e-5
+epochs_num = 30000
+lr = 4e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -81,7 +81,8 @@ elif training_data_type == "song":
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.98)
+# scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=200, gamma=0.98)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.3, patience=30)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
@@ -144,7 +145,7 @@ for epoch in range(epochs_num):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    scheduler.step()
+    scheduler.step(train_loss)
 
     train_losses.append(train_loss)
     current_lr = optimizer.param_groups[0]['lr']
