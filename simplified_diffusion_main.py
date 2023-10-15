@@ -63,13 +63,13 @@ def setup_logging(run_name, current_dir):
 
 dmin = -14.
 dmax = 14.
-epochs_num = 30000
-lr = 5e-5
+epochs_num = 50000
+lr = 3e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 training_data_type = "song"
-run_name = "song_overfit_test_12"
+run_name = "song_overfit_test_13"
 # run_name = "img_overfit_test_1"
 
 categories = {"emotions": 4}
@@ -81,9 +81,9 @@ elif training_data_type == "song":
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=500, gamma=0.98)
-# scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=500)
-mse = nn.L1Loss()
+# scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.98)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=900)
+mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
 
