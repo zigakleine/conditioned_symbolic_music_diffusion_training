@@ -31,9 +31,9 @@ class Diffusion:
         self.beta_start = beta_start
         self.beta_end = beta_end
 
-        self.batch_size = batch_size
-        self.vocab_size = vocab_size
-        self.time_steps = time_steps
+        # self.batch_size = batch_size
+        # self.vocab_size = vocab_size
+        # self.time_steps = time_steps
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -188,12 +188,14 @@ def train():
 
     epochs_num = 300
     # lr = 1.81e-5
-    lr = 31e-5
+    lr = 3e-5
     batch_size = 256
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
 
+    dmin = -3.
+    dmax = 3.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # categories_path = "./db_metadata/nesmdb/nesmdb_categories.pkl"
@@ -204,7 +206,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=8)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=7)
 
     mse = nn.MSELoss()
 
@@ -217,7 +219,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1410_3"
+        run_name = "ddpm_nesmdb_1510_max3"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
@@ -295,11 +297,11 @@ def train():
     #load data
 
     if is_lakh:
-        dataset = LakhMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
+        dataset = LakhMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks, dmin=dmin, dmax=dmax)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [272702, 8434])
 
     else:
-        dataset = NesmdbMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks)
+        dataset = NesmdbMidiDataset(transform=normalize_dataset, std_dev_masks=std_devs_masks, dmin=dmin, dmax=dmax)
         train_ds, test_ds = torch.utils.data.random_split(dataset, [100127, 3097])
 
     print("dataset_len-", dataset.__len__())
@@ -399,7 +401,7 @@ def train():
             torch.save(checkpoint, min_model_abs_path)
 
         sampled_latents = diffusion.sample(model, 1, None, cfg_scale=0)
-        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), -3., 3., std_devs_masks)
+        batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), dmin, dmax, std_devs_masks)
 
         generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{starting_epoch + epoch}_epoch_batch.pkl")
         file = open(generated_batch_abs_path, 'wb')

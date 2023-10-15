@@ -8,7 +8,7 @@ import numpy as np
 
 class LakhMidiDataset(Dataset):
 
-    def __init__(self, transform=None, std_dev_masks=None):
+    def __init__(self, transform=None, std_dev_masks=None, dmin=-14., dmax=14.):
         self.subdirectories = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
         self.metadata_folder = "db_metadata"
         self.database_folder = "lakh"
@@ -17,6 +17,10 @@ class LakhMidiDataset(Dataset):
         # self.encoded_dir = os.getcwd()
         self.all_lakh_metadata = []
         self.transform = transform
+
+        self.dmin = dmin
+        self.dmax = dmax
+
         for subdir_name in self.subdirectories:
             current_metadata_filename = "lakh_2908_" + subdir_name + ".pkl"
             current_lakh_metadata_abs_path = os.path.join(self.current_dir, self.metadata_folder, self.database_folder,
