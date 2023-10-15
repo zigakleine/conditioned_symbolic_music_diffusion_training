@@ -68,7 +68,7 @@ lr = 1.81e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-training_data_type = "song_red"
+training_data_type = "song"
 run_name = "song_overfit_test_14"
 # run_name = "img_overfit_test_1"
 
