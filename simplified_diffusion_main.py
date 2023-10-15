@@ -145,8 +145,8 @@ for epoch in range(epochs_num):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    scheduler.step()
-    # scheduler.step(train_loss)
+    # scheduler.step()
+    scheduler.step(train_loss)
 
     train_losses.append(train_loss)
     current_lr = optimizer.param_groups[0]['lr']
