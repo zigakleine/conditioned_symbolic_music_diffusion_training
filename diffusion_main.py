@@ -186,7 +186,7 @@ def train():
             gpu_name = torch.cuda.get_device_name(i)
             print(f"GPU {i}: {gpu_name}")
 
-    epochs_num = 300
+    epochs_num = 350
     # lr = 1.81e-5
     lr = 3e-5
     batch_size = 256
@@ -194,8 +194,8 @@ def train():
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
 
-    dmin = -3.
-    dmax = 3.
+    dmin = -14.
+    dmax = 14.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # categories_path = "./db_metadata/nesmdb/nesmdb_categories.pkl"
@@ -219,7 +219,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1510_max3"
+        run_name = "ddpm_nesmdb_1610_mse"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"

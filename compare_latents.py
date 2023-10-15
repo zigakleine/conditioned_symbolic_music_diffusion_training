@@ -5,7 +5,7 @@ import torch
 import os
 from singletrack_VAE import singletrack_vae, db_processing
 
-original_song_path = "./30000_epoch_batch.pkl"
+original_song_path = "./30000_epoch_batch_l1.pkl"
 original_song = pickle.load(open(original_song_path, "rb"))
 original_song = original_song[0]
 
