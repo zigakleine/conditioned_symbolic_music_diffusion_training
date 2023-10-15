@@ -187,7 +187,8 @@ def train():
             print(f"GPU {i}: {gpu_name}")
 
     epochs_num = 300
-    lr = 1.81e-5
+    # lr = 1.81e-5
+    lr = 31e-5
     batch_size = 256
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
@@ -202,7 +203,8 @@ def train():
 
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=8)
 
     mse = nn.MSELoss()
 
@@ -345,7 +347,7 @@ def train():
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            # scheduler.step()
 
             train_count += 1
 
@@ -384,7 +386,9 @@ def train():
             mean_val_loss = val_loss_sum / val_count
             val_losses.append(mean_val_loss)
             logging.info(f"Epoch {starting_epoch + epoch} mean validation loss: {mean_val_loss}")
+            scheduler.step(mean_val_loss)
         model.train()
+
 
         if mean_val_loss < min_val_loss:
             min_val_loss = mean_val_loss
