@@ -63,7 +63,7 @@ def setup_logging(run_name, current_dir):
 
 dmin = -14.
 dmax = 14.
-epochs_num = 50000
+epochs_num = 30100
 lr = 3e-5
 batch_size = 1
 current_dir = os.getcwd()
