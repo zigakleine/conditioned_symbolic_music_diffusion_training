@@ -63,14 +63,17 @@ def setup_logging(run_name, current_dir):
 
 dmin = -14.
 dmax = 14.
-epochs_num = 30100
-lr = 3e-5
+epochs_num = 5002
+lr = 1.81e-5
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-training_data_type = "song"
+training_data_type = "song_red"
 run_name = "song_overfit_test_14"
 # run_name = "img_overfit_test_1"
+
+
+
 
 categories = {"emotions": 4}
 
@@ -78,6 +81,8 @@ if training_data_type == "img":
     from models.transformer_film_img import TransformerDDPME
 elif training_data_type == "song":
     from models.transformer_film_emotion import TransformerDDPME
+elif training_data_type == "song_red":
+    from models.transformer_film_reduced import TransformerDDPME
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
