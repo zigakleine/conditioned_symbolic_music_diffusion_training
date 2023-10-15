@@ -63,7 +63,7 @@ def setup_logging(run_name, current_dir):
 
 dmin = -14.
 dmax = 14.
-epochs_num = 5002
+epochs_num = 35002
 lr = 4e-5
 batch_size = 1
 current_dir = os.getcwd()
@@ -86,8 +86,8 @@ elif training_data_type == "song_red":
 
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
-# scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.98)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=850)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.98)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=800)
 mse = nn.L1Loss()
 
 setup_logging(run_name, current_dir)
