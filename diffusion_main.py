@@ -177,7 +177,7 @@ def choose_labels_emotion(l, is_lakh):
     return emotions
 
 
-is_reduced = True
+is_reduced = False
 def train():
 
 
@@ -199,7 +199,7 @@ def train():
     epochs_num = 350
     # lr = 1.81e-5
     lr = 3e-5
-    batch_size = 2048
+    batch_size = 256
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
@@ -216,7 +216,7 @@ def train():
     model = TransformerDDPME(categories).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=2000, gamma=0.98)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=15)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=10)
 
     mse = nn.MSELoss()
 
@@ -229,7 +229,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1610_mse_r"
+        run_name = "ddpm_nesmdb_1610_mse"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
