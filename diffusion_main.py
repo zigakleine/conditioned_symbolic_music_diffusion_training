@@ -65,8 +65,8 @@ class Diffusion:
         model.eval()
         with torch.no_grad():
             x = torch.randn((n, self.time_steps, self.vocab_size)).to(self.device)
-            # for i in tqdm(reversed(range(1, self.noise_steps)), position=0):
-            for i in reversed(range(1, self.noise_steps)):
+            for i in tqdm(reversed(range(1, self.noise_steps)), position=0):
+            # for i in reversed(range(1, self.noise_steps)):
                 t = (torch.ones(n)*i).long().to(self.device)
                 t_expand = t[:, None]
                 predicted_noise = model(x, t_expand, emotion)
