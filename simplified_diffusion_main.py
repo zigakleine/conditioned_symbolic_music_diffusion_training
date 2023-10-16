@@ -12,21 +12,24 @@ from torchvision.transforms import functional as F
 from PIL import Image
 import pickle
 
+
 def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
     batch = (batch - data_min) / (data_max - data_min)
     batch = 2. * batch - 1.
-    # # print("batch-mean-", batch.mean(axis=(0, 1)))
-    #
-    # enc_tracks = np.split(batch, 4, axis=0)
-    # enc_tracks_reduced = []
-    # for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
-    #
-    #     enc_track_reduced = enc_track[:, std_dev_mask]
-    #     enc_tracks_reduced.append(enc_track_reduced)
-    #
-    # enc_tracks_reduced = np.vstack(enc_tracks_reduced)
-    enc_tracks_reduced = batch
+
+    if training_data_type == "song_red":
+        enc_tracks = np.split(batch, 4, axis=0)
+        enc_tracks_reduced = []
+        for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
+
+            enc_track_reduced = enc_track[:, std_dev_mask]
+            enc_tracks_reduced.append(enc_track_reduced)
+
+        enc_tracks_reduced = np.vstack(enc_tracks_reduced)
+    elif training_data_type == "song":
+        enc_tracks_reduced = batch
+
     return enc_tracks_reduced
 
 def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
@@ -38,15 +41,15 @@ def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
     for enc_tracks in batch:
 
         enc_tracks_split = np.split(enc_tracks, 4, axis=1)
-        enc_tracks_reconstructed = enc_tracks_split
-        # enc_tracks_reconstructed = []
-        # for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
-        #     enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
-        #     enc_track_reconstructed[..., std_devs_mask] = enc_track
-        #     enc_tracks_reconstructed.append(enc_track_reconstructed)
-            # transformed = np.random.randn(*batch.shape[:-1], out_channels)
-            # transformed[..., slices] = batch
-            # batch = transformed
+
+        if training_data_type == "song_red":
+            enc_tracks_reconstructed = []
+            for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
+                enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
+                enc_track_reconstructed[..., std_devs_mask] = enc_track
+                enc_tracks_reconstructed.append(enc_track_reconstructed)
+        elif training_data_type == "song":
+            enc_tracks_reconstructed = enc_tracks_split
 
         enc_tracks_reconstructed = np.vstack(enc_tracks_reconstructed)
         batch_.append(enc_tracks_reconstructed)
@@ -64,14 +67,27 @@ def setup_logging(run_name, current_dir):
 dmin = -14.
 dmax = 14.
 epochs_num = 30002
-lr = 4e-5
+lr = 8e-4
 batch_size = 1
 current_dir = os.getcwd()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-training_data_type = "song"
-run_name = "song_overfit_test_15"
+training_data_type = "song_red"
+run_name = "song_overfit_test_1_red"
 # run_name = "img_overfit_test_1"
 
+std_devs_tracks = pickle.load(open("./std_devs_singletrack_2.pkl", "rb"))
+std_devs_masks = []
+num_latents = 42
+
+for std_dev_track in std_devs_tracks:
+    std_dev_track = std_dev_track[:num_latents]
+    std_dev_idx_track = [i for i, dev in std_dev_track]
+    std_dev_idx_track = np.array(std_dev_idx_track)
+
+    std_dev_mask = np.zeros((512,), dtype=bool)
+    std_dev_mask[std_dev_idx_track] = True
+
+    std_devs_masks.append(std_dev_mask)
 
 
 
@@ -88,7 +104,7 @@ model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=500, gamma=0.98)
 # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=800)
-mse = nn.L1Loss()
+mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)
 
@@ -124,7 +140,19 @@ elif training_data_type == "song":
     song_hstacked = np.hstack(song_split)
 
     song = song_hstacked[None, :, :]
-    song = normalize_dataset(torch.tensor(song), dmin, dmax, None)
+    song = normalize_dataset(torch.tensor(song), dmin, dmax, std_devs_masks)
+elif training_data_type == "song_red":
+    songs_path = "./mario_encoded.pkl"
+    songs = pickle.load(open(songs_path, "rb"))
+    song = songs[0]
+
+    song = normalize_dataset(song, dmin, dmax, std_devs_masks)
+
+    song_split = np.split(song, 4, axis=0)
+    song_hstacked = np.hstack(song_split)
+
+    song = song_hstacked[None, :, :]
+    song = torch.tensor(song)
 
 for epoch in range(epochs_num):
 
@@ -136,7 +164,7 @@ for epoch in range(epochs_num):
     emotions = None
     if training_data_type == "img":
         batch = imgarr_n.to(device)
-    elif training_data_type == "song":
+    elif training_data_type == "song" or training_data_type == "song_red":
         batch = song.to(device)
 
     t = diffusion.sample_timesteps(1).to(device)
@@ -185,9 +213,9 @@ for epoch in range(epochs_num):
             generated_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"ep_{epoch}.jpg")
             im.save(generated_abs_path)
 
-        elif training_data_type == "song":
+        elif training_data_type == "song" or training_data_type == "song_red":
 
-            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), dmin, dmax, None)
+            batch_transformed = inverse_data_transform(torch.Tensor.cpu(sampled_latents), dmin, dmax, std_devs_masks)
             generated_batch_abs_path = os.path.join(to_save_dir, "results", run_name, "generated", f"{epoch}_epoch_batch.pkl")
             file = open(generated_batch_abs_path, 'wb')
             pickle.dump(batch_transformed, file)
