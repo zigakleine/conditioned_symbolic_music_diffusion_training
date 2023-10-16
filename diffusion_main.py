@@ -111,7 +111,7 @@ def normalize_dataset(batch, data_min, data_max, std_dev_masks):
             enc_tracks_reduced.append(enc_track_reduced)
 
         enc_tracks_reduced = np.vstack(enc_tracks_reduced)
-    else
+    else:
         enc_tracks_reduced = batch
 
     return enc_tracks_reduced
