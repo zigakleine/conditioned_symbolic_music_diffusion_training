@@ -103,7 +103,7 @@ elif training_data_type == "song_red":
 model = TransformerDDPME(categories).to(device)
 optimizer = optim.AdamW(model.parameters(), lr=lr)
 # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=500, gamma=0.98)
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=900)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', verbose=True, factor=0.5, patience=500)
 mse = nn.MSELoss()
 
 setup_logging(run_name, current_dir)

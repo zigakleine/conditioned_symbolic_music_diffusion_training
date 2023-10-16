@@ -128,9 +128,6 @@ def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
             enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
             enc_track_reconstructed[..., std_devs_mask] = enc_track
             enc_tracks_reconstructed.append(enc_track_reconstructed)
-            transformed = np.random.randn(*batch.shape[:-1], out_channels)
-            transformed[..., slices] = batch
-            batch = transformed
 
         enc_tracks_reconstructed = np.vstack(enc_tracks_reconstructed)
         batch_.append(enc_tracks_reconstructed)

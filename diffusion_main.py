@@ -13,7 +13,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 import logging
-from models.transformer_film_emotion import TransformerDDPME, count_parameters
+
 from lakh_dataset import LakhMidiDataset
 from nesmdb_dataset import NesmdbMidiDataset
 import json
@@ -96,21 +96,24 @@ def setup_logging(run_name, current_dir):
     os.makedirs(os.path.join(current_dir, "results", run_name, "generated"), exist_ok=True)
     os.makedirs(os.path.join(current_dir, "results", run_name, "graphs"), exist_ok=True)
 
+
 def normalize_dataset(batch, data_min, data_max, std_dev_masks):
     """Normalize dataset to range [-1, 1]."""
     batch = (batch - data_min) / (data_max - data_min)
     batch = 2. * batch - 1.
-    # # print("batch-mean-", batch.mean(axis=(0, 1)))
-    #
-    # enc_tracks = np.split(batch, 4, axis=0)
-    # enc_tracks_reduced = []
-    # for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
-    #
-    #     enc_track_reduced = enc_track[:, std_dev_mask]
-    #     enc_tracks_reduced.append(enc_track_reduced)
-    #
-    # enc_tracks_reduced = np.vstack(enc_tracks_reduced)
-    enc_tracks_reduced = batch
+
+    if is_reduced:
+        enc_tracks = np.split(batch, 4, axis=0)
+        enc_tracks_reduced = []
+        for enc_track, std_dev_mask in zip(enc_tracks, std_dev_masks):
+
+            enc_track_reduced = enc_track[:, std_dev_mask]
+            enc_tracks_reduced.append(enc_track_reduced)
+
+        enc_tracks_reduced = np.vstack(enc_tracks_reduced)
+    else
+        enc_tracks_reduced = batch
+
     return enc_tracks_reduced
 
 def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
@@ -122,15 +125,15 @@ def inverse_data_transform(batch, data_min, data_max, std_dev_masks):
     for enc_tracks in batch:
 
         enc_tracks_split = np.split(enc_tracks, 4, axis=1)
-        enc_tracks_reconstructed = enc_tracks_split
-        # enc_tracks_reconstructed = []
-        # for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
-        #     enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
-        #     enc_track_reconstructed[..., std_devs_mask] = enc_track
-        #     enc_tracks_reconstructed.append(enc_track_reconstructed)
-            # transformed = np.random.randn(*batch.shape[:-1], out_channels)
-            # transformed[..., slices] = batch
-            # batch = transformed
+
+        if is_reduced:
+            enc_tracks_reconstructed = []
+            for enc_track, std_devs_mask in zip(enc_tracks_split, std_dev_masks):
+                enc_track_reconstructed = np.random.randn(*enc_track.shape[:-1], 512)
+                enc_track_reconstructed[..., std_devs_mask] = enc_track
+                enc_tracks_reconstructed.append(enc_track_reconstructed)
+        else:
+            enc_tracks_reconstructed = enc_tracks_split
 
         enc_tracks_reconstructed = np.vstack(enc_tracks_reconstructed)
         batch_.append(enc_tracks_reconstructed)
@@ -174,7 +177,14 @@ def choose_labels_emotion(l, is_lakh):
     return emotions
 
 
+is_reduced = True
 def train():
+
+
+    if is_reduced:
+        from models.transformer_film_reduced import TransformerDDPME, count_parameters
+    else:
+        from models.transformer_film_emotion import TransformerDDPME, count_parameters
 
     now = datetime.now()
     formatted = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -219,7 +229,7 @@ def train():
         run_name = "ddpm_lakh"
 
     else:
-        run_name = "ddpm_nesmdb_1610_mse"
+        run_name = "ddpm_nesmdb_1610_mse_r"
 
     if start_from_pretrained_model:
         existing_model_run_name = "ddpm_lakh"
