@@ -199,7 +199,7 @@ def train():
     epochs_num = 350
     # lr = 1.81e-5
     lr = 3e-5
-    batch_size = 4096
+    batch_size = 2048
     current_dir = os.getcwd()
     to_save_dir = "/storage/local/ssd/zigakleine-workspace"
     # to_save_dir = os.getcwd()
